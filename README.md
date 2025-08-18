@@ -14,16 +14,16 @@ Insight automatically detects and analyzes Guru Meditation errors from the Amiga
 - **Comprehensive Error Database** - 200+ predefined error codes with detailed explanations
 - **User-Friendly Interface** - Reaction-based requester.class GUI with clear error dialogs
 - **Command-Line Support** - Manual error code analysis and testing
-- **Guru Mode** - Become a guru by studying random errors from the database
+- **Guru Mode** - Become a _guru_ by studying random errors from the database
 
 ## Operating Modes
 
 ### Workbench Mode (Automatic)
 When you double-click the Insight icon in Workbench, the application automatically:
 - Checks the system's LastAlert array for recent errors
-- Displays any found errors in a graphical dialog
-- Provides detailed explanations and troubleshooting steps
-- Exits after showing the error information
+- Displays any reason found for the last session to Alert, in a requester
+- Provides detailed insight on the possible causes of the Alert
+- Exits after showing the error information, or silently if nothing to show
 
 ### Command Line Mode (Manual)
 You can also run Insight from the command line with various options:
@@ -120,3 +120,5 @@ Each component of **ToolKit** is open source and like *Insight* here will have i
 ## Acknowledgements
 
 *Amiga* is a trademark of **Amiga Inc**. 
+
+Inspired by the original LastAlert2 
