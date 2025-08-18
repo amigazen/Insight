@@ -4,7 +4,7 @@ After meditation comes... Insight
 
 Insight is a comprehensive Guru Meditation error checker and analyzer for Amiga systems. It provides detailed explanations and troubleshooting guidance for system errors, helping developers and users understand and resolve system crashes.
 
-## Overview
+## About Insight
 
 Insight automatically detects and analyzes Guru Meditation errors from the Amiga system. When launched from Workbench, it automatically checks the system's LastAlert array for any recent errors and displays them in a user-friendly dialog.
 
@@ -82,11 +82,8 @@ smake install ;Will copy Insight to the SDK/Tools drawer in the project director
 - Comprehensive error database (200+ codes)
 - Workbench and command-line modes
 - Reaction-based GUI
-- Memory-safe operations
-- C89 compliance
-- Amiga OS 3.0+ support
 
-## [amigazen project](http://www.amigazen.com)
+## About [amigazen project](http://www.amigazen.com)
 
 *A web, suddenly*
 
