@@ -1,0 +1,6 @@
+*.o
+*_debug*
+output.txt
+
+Source/Insight
+Source/Insight_debug

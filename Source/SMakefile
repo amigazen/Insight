@@ -1,0 +1,77 @@
+# SMakefile for Insight - Guru Meditation Error Checker
+# 
+# Guru app command line options:
+#   ERROR/K               - Show error code and description
+#   TEST/S                - Test mode: show random error from database instead of checking SysBase
+#   VERBOSE/S             - Show console debugging output even when no error is detected
+#
+
+# Program names
+GURU_PROGRAM = Insight 
+
+# Source files
+GURU_SRCS = insight.c error_codes.c
+
+# Object files
+GURU_OBJS = insight.o error_codes.o
+
+# Debug object files
+GURU_DEBUG_OBJS = insight_debug.o error_codes_debug.o
+
+# Compiler and linker
+CC = sc
+LINK = slink
+
+# Default target
+all: $(GURU_PROGRAM)
+
+# Debug target with extensive output
+debug: $(GURU_PROGRAM)_debug
+	@echo "Debug build complete: $(GURU_PROGRAM)_debug"
+
+# Create the Insight executable
+$(GURU_PROGRAM): $(GURU_OBJS)
+	$(LINK) FROM sc:lib/c.o $(GURU_OBJS) TO $(GURU_PROGRAM) STRIPDEBUG NODEBUG LIB sc:lib/sc.lib lib:small.lib BATCH
+
+# Create the Insight debug executable with debug symbols
+$(GURU_PROGRAM)_debug: $(GURU_DEBUG_OBJS)
+	$(LINK) FROM sc:lib/c.o $(GURU_DEBUG_OBJS) TO $(GURU_PROGRAM)_debug LIB sc:lib/sc.lib lib:small.lib BATCH
+
+# Compile the source files
+.c.o:
+	$(CC) $*.c OBJNAME=$*.o IDIR=include:
+
+# Compile  files
+error_codes.o: error_codes.c
+	$(CC) error_codes.c OBJNAME=error_codes.o IDIR=include:
+
+# Compile Insight files
+insight.o: insight.c
+	$(CC) insight.c OBJNAME=insight.o IDIR=include:
+
+# Compile debug versions with extensive debug output
+main_debug.o: main.c
+	$(CC) main.c OBJNAME=main_debug.o IDIR=include: DEFINE=DEBUG DEFINE=VERBOSE_DEBUG
+
+error_codes_debug.o: error_codes.c
+	$(CC) error_codes.c OBJNAME=error_codes_debug.o IDIR=include: DEFINE=DEBUG DEFINE=VERBOSE_DEBUG
+
+insight_debug.o: insight.c
+	$(CC) insight.c OBJNAME=insight_debug.o IDIR=include: DEFINE=DEBUG DEFINE=VERBOSE_DEBUG
+
+# Clean target
+clean:
+	Delete $(GURU_OBJS) $(GURU_PROGRAM) $(GURU_DEBUG_OBJS) $(GURU_PROGRAM)_debug error_codes.o error_codes_debug.o
+
+# Install target
+install:
+	@echo "Releasing Insight to /SDK/Tools/Insight..."
+	@copy $(GURU_PROGRAM) to /SDK/Tools/$(GURU_PROGRAM) CLONE
+
+# Dependencies
+error_codes.o: error_codes.c error_codes.h
+insight.o: insight.c error_codes.h
+
+# Debug dependencies
+error_codes_debug.o: error_codes.c error_codes.h
+insight_debug.o: insight.c error_codes.h

@@ -1,0 +1,558 @@
+@DATABASE "Insight.guide"
+@AUTHOR "amigazen project"
+@HELP "main"
+@INDEX "index"
+
+@NODE "main" "Insight - Guru Meditation Error Checker"
+After meditation comes... Insight
+
+Insight is a comprehensive Guru Meditation error checker and analyzer for Amiga systems. It provides detailed explanations and troubleshooting guidance for system errors, helping developers and users understand and resolve system crashes.
+
+@{"Overview" LINK "overview"}
+@{"Usage" LINK "usage"}
+@{"Operating Modes" LINK "modes"}
+@{"Error Categories" LINK "errors"}
+@{"API Reference" LINK "api"}
+@{"Examples" LINK "examples"}
+@{"Troubleshooting" LINK "troubleshooting"}
+@{"Technical Details" LINK "technical"}
+@{"Development" LINK "development"}
+@{"License" LINK "license"}
+@{"Support" LINK "support"}
+@{"Version History" LINK "changelog"}
+@{"Index" LINK "index"}
+@ENDNODE
+
+@NODE "overview" "Overview"
+After meditation comes... Insight
+
+Insight is designed to automatically detect and analyze Guru Meditation errors from the Amiga system. When launched from Workbench, it automatically checks the system's LastAlert array for any recent errors and displays them in a user-friendly dialog.
+
+@{"Main Index" LINK "main"}
+@{"Usage Information" LINK "usage"}
+
+Key Features:
+? Automatic error detection from system LastAlert
+? Comprehensive error code database
+? Detailed troubleshooting explanations
+? User-friendly graphical interface
+? Command-line operation support
+? Test mode for demonstration
+
+The application can operate in two main modes:
+1. Workbench mode - automatically detects and displays system errors
+2. Command-line mode - allows manual error code analysis and testing
+@ENDNODE
+
+@NODE "usage" "Usage"
+After meditation comes... Insight
+
+Insight can be used in several ways depending on your needs and how you launch it.
+
+@{"Main Index" LINK "main"}
+@{"Operating Modes" LINK "modes"}
+
+Workbench Mode:
+When you double-click the Insight icon in Workbench, the application automatically:
+? Checks the system's LastAlert array for recent errors
+? Displays any found errors in a graphical dialog
+? Provides detailed explanations and troubleshooting steps
+? Exits after showing the error information
+
+Command Line Mode:
+You can also run Insight from the command line with various options:
+
+Basic Usage:
+Insight [ERROR=code] [TEST] [VERBOSE]
+
+Parameters:
+? ERROR=0xXXXXXXXX - Analyze a specific error code
+? TEST - Show a random error from the database (demo mode)
+? VERBOSE - Enable detailed debug output
+
+Examples:
+Insight ERROR=0x80000004
+Insight TEST
+Insight VERBOSE
+@ENDNODE
+
+@NODE "modes" "Operating Modes"
+After meditation comes... Insight
+
+Insight operates in different modes depending on how it's launched and what parameters are provided.
+
+@{"Main Index" LINK "main"}
+@{"Usage Information" LINK "usage"}
+
+Automatic Mode (Workbench):
+? Automatically detects system errors from LastAlert
+? Shows graphical error dialog
+? Exits after displaying error information
+? No user interaction required
+
+Manual Mode (Command Line):
+? ERROR parameter: Analyze specific error code
+? TEST parameter: Demonstrate with random error
+? VERBOSE parameter: Show detailed debug information
+? Console output for error analysis
+
+Error Detection:
+The application reads the SysBase->LastAlert array which contains:
+? LastAlert[0] - Primary error code
+? LastAlert[1] - Additional error information  
+? LastAlert[2] - Error context
+? LastAlert[3] - Task ID that caused the error
+@ENDNODE
+
+@NODE "errors" "Error Categories"
+After meditation comes... Insight
+
+Insight provides comprehensive coverage of Amiga system errors, organized into logical categories for easy understanding and troubleshooting.
+
+@{"Main Index" LINK "main"}
+@{"API Reference" LINK "api"}
+
+CPU Exceptions (0x01-0x1F):
+? Task held, Bus error, Address error
+? Illegal instruction, Zero divide
+? CHK/TRAPV instruction failures
+? Privilege violations, Trace events
+? FPU emulator exceptions
+? Stack frame format errors
+? Interrupt handling issues
+
+File System Errors (0x20-0x2F):
+? Disk read/write errors
+? File not found, Permission denied
+? File system corruption
+? Directory errors, Mount issues
+? Timeout and busy conditions
+
+Floating Point Errors (0x30-0x37):
+? FPU branch/set unordered
+? Inexact results, Divide by zero
+? Underflow/overflow conditions
+? Operand errors, Signalling NaN
+
+Memory Protection (0x80-0x8F):
+? Memory access violations
+? Write/read protection faults
+? Execute protection errors
+? Stack and heap protection issues
+
+System Errors (0x100-0x10F):
+? Resource exhaustion
+? Configuration errors
+? Initialization failures
+? System panic, crash, hang conditions
+
+Library-Specific Errors:
+? Exec library (0x01000000-0x010000FF)
+? Graphics library (0x02000000-0x0200FFFF)
+? Intuition library (0x04000000-0x0400FFFF)
+? DOS library (0x07000000-0x0700FFFF)
+? Workbench (0x31000000-0x3100FFFF)
+
+Deadend Alerts (0x80000000+):
+? Fatal, unrecoverable errors
+? Critical system failures
+? Hardware faults requiring reboot
+@ENDNODE
+
+@NODE "api" "API Reference"
+After meditation comes... Insight
+
+Insight provides a comprehensive API for error code analysis and management.
+
+@{"Main Index" LINK "main"}
+@{"Examples" LINK "examples"}
+
+Core Functions:
+
+GainInsight(ULONG errorCode):
+Retrieves detailed error information for a given error code.
+Returns a pointer to ErrorInfo structure or NULL if not found.
+
+FreeErrorInfo(struct ErrorInfo *errorInfo):
+Frees memory allocated by GainInsight().
+Always call this when done with error information.
+
+ParseLastAlert(ULONG *taskID, BOOL verbose):
+Parses the system's LastAlert array.
+Returns error code or (ULONG)-1 if no error.
+Sets taskID to the task that caused the error.
+
+HexStringToULong(STRPTR hexString):
+Converts hexadecimal string to ULONG value.
+Supports "0x" prefix and case-insensitive input.
+Returns (ULONG)-1 for invalid input.
+
+Data Structures:
+
+struct ErrorInfo:
+? ULONG code - Error code
+? STRPTR description - Human-readable error description
+? STRPTR insight - Detailed troubleshooting explanation
+
+Error Table:
+The application includes a comprehensive error table with:
+? 200+ predefined error codes
+? Detailed descriptions and explanations
+? Troubleshooting guidance
+? Recovery recommendations
+@ENDNODE
+
+@NODE "examples" "Examples"
+After meditation comes... Insight
+
+Here are practical examples of how to use Insight for error analysis and troubleshooting.
+
+@{"Main Index" LINK "main"}
+@{"API Reference" LINK "api"}
+
+Basic Error Analysis:
+To analyze a specific error code:
+
+Command Line:
+Insight ERROR=0x80000004
+
+Programmatic:
+struct ErrorInfo *error = GainInsight(0x80000004);
+if (error) {
+    Printf("Error: %s\n", error->description);
+    Printf("Help: %s\n", error->insight);
+    FreeErrorInfo(error);
+}
+
+System Error Detection:
+To check for recent system errors:
+
+Automatic (Workbench):
+Just double-click the Insight icon
+
+Manual (Command Line):
+Insight VERBOSE
+
+Test Mode:
+To demonstrate the application:
+
+Command Line:
+Insight TEST
+
+Error Code Ranges:
+Common error code patterns:
+
+CPU Exceptions:
+0x00000001 - Task held
+0x00000002 - Bus error
+0x00000004 - Illegal instruction
+
+Memory Errors:
+0x80000002 - Fatal bus error
+0x80000003 - Fatal address error
+0x8000000E - Fatal stack error
+
+System Errors:
+0x81000001 - Exception vector checksum
+0x81000005 - Corrupt memory list
+0x8100000E - Stack probe failure
+@ENDNODE
+
+@NODE "troubleshooting" "Troubleshooting"
+After meditation comes... Insight
+
+Common issues and solutions when using Insight.
+
+@{"Main Index" LINK "main"}
+@{"Usage Information" LINK "usage"}
+
+Common Problems:
+
+No Error Detected:
+? LastAlert[0] = -1 means no recent errors
+? This is normal system operation
+? Application will exit cleanly
+
+Unknown Error Code:
+? Error not in database
+? Generic error dialog shown
+? Check error code format (0xXXXXXXXX)
+
+Memory Issues:
+? Ensure sufficient system memory
+? Check for memory leaks
+? Verify library versions
+
+Error Categories:
+
+Recovery Alerts (0x0xxxxxxx):
+? System can recover automatically
+? User intervention may be required
+? Check application logic
+
+Deadend Alerts (0x8xxxxxxx):
+? Fatal, unrecoverable errors
+? System reboot required
+? Check hardware and drivers
+
+Debugging Tips:
+
+Use VERBOSE Mode:
+? Shows detailed debug information
+? Displays LastAlert array contents
+? Helps identify error sources
+
+Check Task ID:
+? Identifies which task caused error
+? Helps isolate problematic applications
+? Useful for debugging
+
+Error Code Analysis:
+? Upper bits indicate error category
+? Lower bits provide specific details
+? Check library documentation
+
+Performance Considerations:
+? Error table loaded in memory
+? Fast lookup using linear search
+? Minimal memory footprint
+? Efficient string expansion
+@ENDNODE
+
+@NODE "technical" "Technical Details"
+After meditation comes... Insight
+
+Technical information about Insight's implementation and architecture.
+
+@{"Main Index" LINK "main"}
+@{"API Reference" LINK "api"}
+
+Architecture:
+? C89 compliant code
+? Amiga native libraries
+? Reaction-based GUI
+? Memory-safe operations
+
+Libraries Used:
+? exec.library - System access
+? intuition.library - GUI operations
+? graphics.library - Text rendering
+? utility.library - Utility functions
+? requester.class - Dialog display
+
+Memory Management:
+? Safe memory allocation
+? Proper cleanup on exit
+? No memory leaks
+? Buffer overflow protection
+
+Error Handling:
+? Comprehensive error checking
+? Graceful failure handling
+? User-friendly error messages
+? Debug output support
+
+Compatibility:
+? Amiga OS 3.0+
+? 68000+ processors
+? Standard Amiga hardware
+? No PPC support required
+@ENDNODE
+
+@NODE "development" "Development"
+After meditation comes... Insight
+
+Information for developers who want to extend or modify Insight.
+
+@{"Main Index" LINK "main"}
+@{"API Reference" LINK "api"}
+
+Building:
+? SAS/C compiler support
+? SMakefile build system
+? SCOPTIONS configuration
+? Standard Amiga development tools
+
+Extending:
+? Add new error codes to errorTable
+? Implement custom error handlers
+? Extend GUI functionality
+? Add new analysis features
+
+Error Database:
+? Centralized error definitions
+? Easy to maintain and update
+? Token-based text expansion
+? Comprehensive coverage
+
+Testing:
+? Built-in test mode
+? Random error selection
+? Verbose debugging output
+? Error simulation capabilities
+
+Distribution:
+? Standard Amiga application
+? No external dependencies
+? Self-contained executable
+? Easy installation
+@ENDNODE
+
+@NODE "license" "License and Copyright"
+After meditation comes... Insight
+
+Legal information and licensing details for Insight.
+
+@{"Main Index" LINK "main"}
+
+Copyright:
+(c) 2025 amigazen project
+All rights reserved.
+
+License:
+BSD 2-Clause License
+
+Copyright (c) 2025 amigazen project
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Distribution:
+? Free for personal, educational, and commercial use
+? Source code redistribution permitted with license terms
+? Binary redistribution permitted with license terms
+? Modifications allowed with license compliance
+? Source code available for study and modification
+
+Disclaimer:
+? No warranty provided
+? Not responsible for data loss
+? Use in production at own risk
+? Test thoroughly before deployment
+@ENDNODE
+
+@NODE "support" "Support and Contact"
+After meditation comes... Insight
+
+How to get help and support for Insight.
+
+@{"Main Index" LINK "main"}
+
+Documentation:
+? This AmigaGuide file
+? Source code comments
+? API reference
+? Example usage
+
+Troubleshooting:
+? Check error messages
+? Use VERBOSE mode
+? Review system logs
+? Test with known errors
+
+Development:
+? Source code available
+? Extensible architecture
+? Well-documented API
+? Standard Amiga practices
+
+Community:
+? Amiga development forums
+? User groups
+? Developer resources
+? Knowledge sharing
+@ENDNODE
+
+@NODE "changelog" "Version History"
+After meditation comes... Insight
+
+History of changes and improvements in Insight.
+
+@{"Main Index" LINK "main"}
+
+Version 47.1 (17.08.2025):
+? Initial release
+? Comprehensive error database
+? Workbench and command-line modes
+? Reaction-based GUI
+? Memory-safe operations
+? C89 compliance
+? Amiga OS 3.0+ support
+
+Features:
+? 200+ predefined error codes
+? Automatic error detection
+? Detailed troubleshooting
+? User-friendly interface
+? Test mode support
+? Verbose debugging
+? Comprehensive API
+
+Technical:
+? SAS/C compiler support
+? SMakefile build system
+? Memory leak protection
+? Buffer overflow safety
+? Proper cleanup handling
+? Error recovery support
+@ENDNODE
+
+@NODE "index" "Index"
+After meditation comes... Insight
+
+Quick reference index for Insight documentation.
+
+@{"Main Index" LINK "main"}
+
+Getting Started:
+@{"Overview" LINK "overview"}
+@{"Usage" LINK "usage"}
+@{"Operating Modes" LINK "modes"}
+
+Error Information:
+@{"Error Categories" LINK "errors"}
+@{"API Reference" LINK "api"}
+@{"Examples" LINK "examples"}
+
+Advanced Topics:
+@{"Troubleshooting" LINK "troubleshooting"}
+@{"Technical Details" LINK "technical"}
+@{"Development" LINK "development"}
+
+Reference:
+@{"License" LINK "license"}
+@{"Support" LINK "support"}
+@{"Version History" LINK "changelog"}
+
+Quick Commands:
+? Insight - Check system errors
+? Insight ERROR=0xXXXXXXXX - Analyze specific error
+? Insight TEST - Demo mode
+? Insight VERBOSE - Debug output
+
+Common Error Codes:
+? 0x80000004 - Illegal instruction
+? 0x80000005 - Division by zero
+? 0x81000005 - Corrupt memory list
+? 0x8100000E - Stack overflow
+@ENDNODE
+
