@@ -63,7 +63,7 @@ struct ClassLibrary *RequesterBase = NULL;
 /* Reaction class handles */
 Class *RequesterClass = NULL;
 
-static const char *verstag = "$VER: Insight 47.1 (17.08.2025)\n";
+static const char *verstag = "$VER: Insight 47.2 (26.08.2025)\n";
 static const char *stack_cookie = "$STACK: 8192\n";
 
 /* Application variables - none needed for this simple app */
@@ -731,47 +731,39 @@ ULONG HexStringToULong(STRPTR hexString) {
  * - LastAlert[3] contains the Task ID that caused the error
  */
 ULONG ParseLastAlert(ULONG *taskID, BOOL verbose) {
-    ULONG lastAlert[4];
-    ULONG errorCode;
-    
-    errorCode = (ULONG)-1; // Assume no error initially
+    ULONG errorCode = (ULONG)-1;
 
-    if (SysBase == NULL) {
-        return errorCode; // Cannot parse if SysBase is not available
-    }
+    // Use the global SysBase variable directly, just like LastGURU does
+    if (SysBase != NULL) {
+        // Access LastAlert array directly through SysBase structure
+        ULONG la0 = SysBase->LastAlert[0];
+        ULONG la1 = SysBase->LastAlert[1];
+        ULONG la2 = SysBase->LastAlert[2];
+        ULONG la3 = SysBase->LastAlert[3];
 
-    // Access LastAlert safely - this field should always be accessible
-    // Copy the 4 LONG values from SysBase->LastAlert
-    memcpy(lastAlert, SysBase->LastAlert, sizeof(lastAlert));
-
-    // Debug output to understand the LastAlert structure
-    if (verbose) {
-        Printf("Insight: LastAlert[0] = 0x%08X (primary error code)\n", lastAlert[0]);
-        Printf("Insight: LastAlert[1] = 0x%08X (additional error info)\n", lastAlert[1]);
-        Printf("Insight: LastAlert[2] = 0x%08X (error context)\n", lastAlert[2]);
-        Printf("Insight: LastAlert[3] = 0x%08X (task ID)\n", lastAlert[3]);
-    }
-
-    // The primary error code is in LastAlert[0]
-    // According to Amiga documentation, LastAlert[0] = -1 (0xFFFFFFFF) means no error
-    if (lastAlert[0] != (ULONG)-1 && lastAlert[0] != 0) {
-        // There is an error - use LastAlert[0] as the primary error code
-        errorCode = lastAlert[0];
-        
-        // The Task ID is in LastAlert[3]
-        *taskID = lastAlert[3];
-        
         if (verbose) {
-            Printf("Insight: Error detected - Code: 0x%08X, Task ID: 0x%08X\n", errorCode, *taskID);
+            Printf("--- Direct SysBase Access ---\n");
+            Printf("SysBase is at address:         0x%08lX\n", (ULONG)SysBase);
+            Printf("LastAlert[0] = 0x%08lX (error code)\n", la0);
+            Printf("LastAlert[1] = 0x%08lX (info)\n", la1);
+            Printf("LastAlert[2] = 0x%08lX (context)\n", la2);
+            Printf("LastAlert[3] = 0x%08lX (task ID)\n", la3);
+            Printf("------------------------------------\n");
         }
         
-        return errorCode;
+        // Check if there's actually an error code (not -1 or 0)
+        if (la0 != (ULONG)-1 && la0 != 0) {
+            errorCode = la0;
+            *taskID = la3;
+        } else {
+            *taskID = 0;
+        }
+    } else {
+        if (verbose) {
+            Printf("ParseLastAlert: SysBase is NULL\n");
+        }
+        *taskID = 0;
     }
-
-    // No error detected
-    if (verbose) {
-        Printf("Insight: No error detected in LastAlert\n");
-    }
-    *taskID = 0;
-    return errorCode; // Indicate no error
+    
+    return errorCode;
 }
