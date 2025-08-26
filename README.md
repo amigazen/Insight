@@ -77,6 +77,11 @@ smake install ;Will copy Insight to the SDK/Tools drawer in the project director
 
 ## ChangeLog
 
+### Version 47.2 (26.26.2025)
+
+- Fixed what could be considered a fairly serious bug in that reading LastAlert from SysBase was corrupted
+- Added additional error codes for some 
+
 ### Version 47.1 (17.08.2025)
 - Initial release
 - Comprehensive error database (200+ codes)
