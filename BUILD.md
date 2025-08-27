@@ -7,10 +7,13 @@
 
 ### Build Commands
 ```bash
-# Using SMakefile
+; Using SMakefile
 cd Source/
 smake Insight
-smake install ;Will copy Insight to the SDK/Tools drawer in the project directory
+
+smake install ; Will copy Insight to the SDK/Tools drawer in the project directory
+
+smake clean ; Will clean the local project folder of build artifacts
 ```
 
 ## Installation

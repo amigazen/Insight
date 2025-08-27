@@ -1,10 +1,5 @@
 /*
- * Insight - Guru Meditation Error Checker
- *
- * This is a simplified version of Insights that only:
- * 1. Checks the LastAlert from SysBase on startup
- * 2. Shows an autorequest with the appropriate error message
- * 3. Exits after displaying the error
+ * After meditiation comes... Insight
  *
  * Copyright (c) 2025 amigazen project
  * Licensed under BSD 2-Clause License
@@ -63,7 +58,7 @@ struct ClassLibrary *RequesterBase = NULL;
 /* Reaction class handles */
 Class *RequesterClass = NULL;
 
-static const char *verstag = "$VER: Insight 47.2 (26.08.2025)\n";
+static const char *verstag = "$VER: Insight 47.3 (27.08.2025)\n";
 static const char *stack_cookie = "$STACK: 8192\n";
 
 /* Application variables - none needed for this simple app */
@@ -102,25 +97,25 @@ int main(int argc, char *argv[])
         }
         
         /* Parse the LastAlert array to get the complete error code and task ID */
-        if (verbose) {
-            Printf("Insight: Parsing LastAlert array from SysBase...\n");
-        }
         guruCode = ParseLastAlert(&taskID, verbose);
         
         /* Check if there's actually an error code (not -1) */
         /* According to Amiga documentation, LastAlert[0] = -1 (0xFFFFFFFF) means no error */
         /* Additional safety check: ensure the value is reasonable (not corrupted) */
-        if (guruCode == (ULONG)-1 || guruCode == 0) {
-            /* No error - exit cleanly */
+        if (guruCode == (ULONG)-1) {
+            /* No error - LastAlert[0] = 0xFFFFFFFF means no error exists */
             if (verbose) {
-                Printf("Insight: No error detected, exiting cleanly\n");
+                Printf("Insight: No meditation\n");
+            }
+            SafeExit(RETURN_OK);
+        } else if (guruCode == 0) {
+            /* No error - LastAlert[0] = 0 means no error exists */
+            if (verbose) {
+                Printf("Insight: No meditation\n");
             }
             SafeExit(RETURN_OK);
         } else {
             /* Error exists - parse the error code and show requester */
-            if (verbose) {
-                Printf("Insight: Error detected, initializing libraries...\n");
-            }
             if (!InitializeLibraries()) {
                 SafeExit(RETURN_FAIL);
             }
@@ -130,23 +125,14 @@ int main(int argc, char *argv[])
             }
             
             /* Parse the error code to get description and explanation */
-            if (verbose) {
-                Printf("Insight: Looking up error code 0x%08X in database...\n", guruCode);
-            }
             errorInfo = GainInsight(guruCode);
             if (errorInfo != NULL) {
                 /* Found error in database - show with proper description */
-                if (verbose) {
-                    Printf("Insight: Error found in database, showing dialog...\n");
-                }
                 ShowErrorDialog(guruCode, errorInfo->description, errorInfo->insight, taskID);
                 FreeErrorInfo(errorInfo);  /* Free allocated memory */
             } else {
                 /* Error code not in database - show generic error dialog */
-                if (verbose) {
-                    Printf("Insight: Error code not in database, showing generic error dialog\n");
-                }
-                ShowErrorDialog(guruCode, "Unknown Error", "This error code is not recognized by the Insight database.", taskID);
+                ShowErrorDialog(guruCode, "Unknown Error", "This error is not recognized.", taskID);
             }
             
             Cleanup();
@@ -175,20 +161,6 @@ int main(int argc, char *argv[])
                 /* Clear the buffer first */
                 memset(errorBuffer, 0, sizeof(errorBuffer));
                 
-                /* Insight: show what we're working with */
-                if (verbose) {
-                    Printf("Insight: args[0] pointer: 0x%08X\n", (ULONG)args[0]);
-                    Printf("Insight: args[0] content: '%s'\n", args[0]);
-                    Printf("Insight: args[0] length: %d\n", strlen(args[0]));
-                    
-                    /* Show raw bytes of args[0] */
-                    Printf("Insight: Raw bytes of args[0]: ");
-                    for (i = 0; i < 16 && args[0][i] != '\0'; i++) {
-                        Printf("0x%02X ", (unsigned char)args[0][i]);
-                    }
-                    Printf("\n");
-                }
-                
                 /* Try to copy the string manually character by character */
                 i = 0;
                 while (i < sizeof(errorBuffer) - 1 && args[0][i] != '\0') {
@@ -197,25 +169,9 @@ int main(int argc, char *argv[])
                 }
                 errorBuffer[i] = '\0';  /* Ensure null termination */
                 
-                if (verbose) {
-                    Printf("Insight: Manually copied to errorBuffer: '%s'\n", errorBuffer);
-                    Printf("Insight: Raw bytes of errorBuffer after copy: ");
-                    for (i = 0; i < 16 && errorBuffer[i] != '\0'; i++) {
-                        Printf("0x%02X ", (unsigned char)errorBuffer[i]);
-                    }
-                    Printf("\n");
-                }
-                
                 errorArg = errorBuffer;
             } else {
                 errorArg = NULL;
-            }
-            
-            if (verbose) {
-                Printf("Insight: ReadArgs results - ERROR: '%s', GURU: %s, VERBOSE: %s\n", 
-                       errorArg ? errorArg : (STRPTR)"(NULL)", 
-                       testMode ? "TRUE" : "FALSE", 
-                       verbose ? "TRUE" : "FALSE");
             }
             
             FreeArgs(rdargs);
@@ -249,14 +205,6 @@ int main(int argc, char *argv[])
             SafeExit(RETURN_OK);
         }
         
-        /* Show parameter summary if verbose mode is enabled */
-        if (verbose) {
-            Printf("Insight: Final parameter summary - testMode: %s, verbose: %s, errorArg: '%s'\n",
-                   testMode ? "TRUE" : "FALSE", 
-                   verbose ? "TRUE" : "FALSE",
-                   errorArg ? errorArg : (STRPTR)"(NULL)");
-        }
-        
         /* Initialize random number generator for test mode */
         if (testMode) {
             srand((unsigned int)time(NULL));
@@ -280,10 +228,6 @@ int main(int argc, char *argv[])
             guruCode = HexStringToULong(errorArg);
             /* Check if parsing was successful - HexStringToULong returns (ULONG)-1 for invalid input */
             if (guruCode != (ULONG)-1) {
-                if (verbose) {
-                    Printf("Insight: Successfully parsed error code: 0x%08X\n", guruCode);
-                }
-                
                 errorInfo = GainInsight(guruCode);
                 if (errorInfo != NULL) {
                     if (testMode) {
@@ -322,9 +266,6 @@ int main(int argc, char *argv[])
             /* No special parameters - check SysBase LastAlert */
             /* LastAlert[4] is an array containing the last 4 system alert codes */
             /* The 4 LONG values together form the complete error code */
-            if (verbose) {
-                Printf("Insight: Command line mode - parsing LastAlert array from SysBase...\n");
-            }
             guruCode = ParseLastAlert(&taskID, verbose);
             
             /* Check if there's actually an error code (not -1) */
@@ -332,14 +273,11 @@ int main(int argc, char *argv[])
             if (guruCode == (ULONG)-1) {
                 /* No error - this is normal, not a failure */
                 if (verbose) {
-                    Printf("Insight: No error detected in LastAlert\n");
+                    Printf("Insight: No meditation\n");
                 }
                 success = TRUE;  /* Successfully determined no error exists */
             } else {
                 /* Error exists - parse the error code and print to console */
-                if (verbose) {
-                    Printf("Insight: Error detected in LastAlert, looking up in database...\n");
-                }
                 errorInfo = GainInsight(guruCode);
                 if (errorInfo != NULL) {
                     Printf("Error Code: 0x%08X\n\nTask ID: 0x%08X\n\nError: %s\n\n%s\n", 
@@ -658,38 +596,24 @@ ULONG HexStringToULong(STRPTR hexString) {
     ULONG tempDigit;
     int i;
 
-    Printf("Insight: HexStringToULong called with: '%s'\n", hexString ? (char *)hexString : "NULL");
-    if (hexString) {
-        Printf("Insight: Raw bytes: ");
-        for (i = 0; i < 16 && hexString[i] != '\0'; i++) {
-            Printf("0x%02X ", (unsigned char)hexString[i]);
-        }
-        Printf("\n");
-    }
-
     // Check for NULL pointer or empty string
     if (hexString == NULL || *hexString == '\0') {
-        Printf("Insight: NULL or empty string, returning -1\n");
         return (ULONG)-1;
     }
 
     // Skip "0x" prefix if present
     if (current[0] == '0' && (current[1] == 'x' || current[1] == 'X')) {
         current += 2;
-        Printf("Insight: Skipped 0x prefix, current now: '%s'\n", current);
     }
 
     // Check if we have at least one character after prefix
     if (*current == '\0') {
-        Printf("Insight: Empty string after prefix, returning -1\n");
         return (ULONG)-1;  // Empty string after prefix
     }
 
     // Process each character of the string
     while (*current != '\0') {
         tempChar = *current;
-        
-        Printf("Insight: Processing char '%c' (0x%02X) at offset %d\n", *current, (unsigned char)*current, (int)(current - hexString));
         
         // Convert to uppercase for case-insensitive processing
         if (tempChar >= 'a' && tempChar <= 'z') {
@@ -702,7 +626,6 @@ ULONG HexStringToULong(STRPTR hexString) {
         } else if (tempChar >= 'A' && tempChar <= 'F') {
             tempDigit = tempChar - 'A' + 10;
         } else {
-            Printf("Insight: Invalid hex character: 0x%02X, returning -1\n", tempChar);
             // Invalid character encountered, return (ULONG)-1 as error indicator
             return (ULONG)-1;
         }
@@ -711,8 +634,6 @@ ULONG HexStringToULong(STRPTR hexString) {
         // This is the correct method for building a number from a string
         // regardless of machine endianness.
         result = (result << 4) | tempDigit;
-        
-        Printf("Insight: Char '%c' -> digit %lu, result now 0x%08X\n", *current, tempDigit, result);
         
         current++;
     }
@@ -732,35 +653,46 @@ ULONG HexStringToULong(STRPTR hexString) {
  */
 ULONG ParseLastAlert(ULONG *taskID, BOOL verbose) {
     ULONG errorCode = (ULONG)-1;
+    struct ExecBase *sysBase;
+    ULONG *guruData, guruFromMemory;
 
-    // Use the global SysBase variable directly, just like LastGURU does
-    if (SysBase != NULL) {
-        // Access LastAlert array directly through SysBase structure
-        ULONG la0 = SysBase->LastAlert[0];
-        ULONG la1 = SysBase->LastAlert[1];
-        ULONG la2 = SysBase->LastAlert[2];
-        ULONG la3 = SysBase->LastAlert[3];
-
+    // Try to get SysBase from the system - this is the robust way
+    // On Amiga, SysBase is at address 4
+    sysBase = *(struct ExecBase **)4;
+    
+    // Fallback: if direct access fails, try the global SysBase variable
+    if (sysBase == NULL && SysBase != NULL) {
+        sysBase = SysBase;
         if (verbose) {
-            Printf("--- Direct SysBase Access ---\n");
-            Printf("SysBase is at address:         0x%08lX\n", (ULONG)SysBase);
-            Printf("LastAlert[0] = 0x%08lX (error code)\n", la0);
-            Printf("LastAlert[1] = 0x%08lX (info)\n", la1);
-            Printf("LastAlert[2] = 0x%08lX (context)\n", la2);
-            Printf("LastAlert[3] = 0x%08lX (task ID)\n", la3);
-            Printf("------------------------------------\n");
+            Printf("ParseLastAlert: Using fallback global SysBase\n");
         }
+    }
+    
+    if (sysBase != NULL) {
+        guruData = (ULONG *) 0x0100;
+        guruFromMemory = guruData[0];
         
-        // Check if there's actually an error code (not -1 or 0)
-        if (la0 != (ULONG)-1 && la0 != 0) {
-            errorCode = la0;
-            *taskID = la3;
+        if (guruFromMemory != 0) {
+            // If GuruData[0] is NOT zero, use it directly
+            errorCode = guruFromMemory;
+            *taskID = guruData[1];
         } else {
-            *taskID = 0;
+            ULONG la0 = sysBase->LastAlert[0];
+            ULONG la1 = sysBase->LastAlert[1];
+            ULONG la2 = sysBase->LastAlert[2];
+            ULONG la3 = sysBase->LastAlert[3];
+            
+            // Check if there's actually an error code (not -1 or 0)
+            if (la0 != (ULONG)-1 && la0 != 0) {
+                errorCode = la0;
+                *taskID = la3;
+            } else {
+                *taskID = 0;
+            }
         }
     } else {
         if (verbose) {
-            Printf("ParseLastAlert: SysBase is NULL\n");
+            Printf("ParseLastAlert: Could not get SysBase from address 4 or global variable\n");
         }
         *taskID = 0;
     }
