@@ -77,7 +77,12 @@ smake install ;Will copy Insight to the SDK/Tools drawer in the project director
 
 ## ChangeLog
 
-### Version 47.2 (26.26.2025)
+### Version 47.3 (27.08.2025)
+
+- Fixed reading of LastAlert finally and properly 
+- Removed debugging output
+
+### Version 47.2 (26.08.2025)
 
 - Fixed what could be considered a fairly serious bug in that reading LastAlert from SysBase was corrupted
 - Added additional error codes for some 
