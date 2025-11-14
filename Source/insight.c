@@ -43,7 +43,9 @@ BOOL InitializeApplication(VOID);
 STRPTR WordWrapText(STRPTR text, ULONG maxWidth, struct Screen *screen);
 VOID SafeExit(int status);  /* Safe exit with cleanup */
 ULONG HexStringToULong(STRPTR hexString);  /* Convert hex string to ULONG */
-ULONG ParseLastAlert(ULONG *taskID, BOOL verbose);  /* Parse LastAlert array and return error code */
+ULONG ParseLastAlert(ULONG *taskID);  /* Parse LastAlert array and return error code */
+BOOL LooksLikeHexNumber(STRPTR str);  /* Check if string looks like a hex number */
+BOOL ValidateHexErrorCode(STRPTR hexString);  /* Validate that string is exactly 8 hex digits */
 
 
 /* Library base pointers */
@@ -58,7 +60,7 @@ struct ClassLibrary *RequesterBase = NULL;
 /* Reaction class handles */
 Class *RequesterClass = NULL;
 
-static const char *verstag = "$VER: Insight 47.3 (27.08.2025)\n";
+static const char *verstag = "$VER: Insight 47.4 (13.11.2025)\n";
 static const char *stack_cookie = "$STACK: 8192\n";
 
 /* Application variables - none needed for this simple app */
@@ -71,7 +73,6 @@ int main(int argc, char *argv[])
     ULONG taskID;
     struct RDArgs *rdargs;
     BOOL testMode = FALSE;
-    BOOL verbose = FALSE;
     BOOL success = FALSE;
     BOOL fromWorkbench = FALSE;
     
@@ -97,22 +98,16 @@ int main(int argc, char *argv[])
         }
         
         /* Parse the LastAlert array to get the complete error code and task ID */
-        guruCode = ParseLastAlert(&taskID, verbose);
+        guruCode = ParseLastAlert(&taskID);
         
         /* Check if there's actually an error code (not -1) */
         /* According to Amiga documentation, LastAlert[0] = -1 (0xFFFFFFFF) means no error */
         /* Additional safety check: ensure the value is reasonable (not corrupted) */
         if (guruCode == (ULONG)-1) {
             /* No error - LastAlert[0] = 0xFFFFFFFF means no error exists */
-            if (verbose) {
-                Printf("Insight: No meditation\n");
-            }
             SafeExit(RETURN_OK);
         } else if (guruCode == 0) {
             /* No error - LastAlert[0] = 0 means no error exists */
-            if (verbose) {
-                Printf("Insight: No meditation\n");
-            }
             SafeExit(RETURN_OK);
         } else {
             /* Error exists - parse the error code and show requester */
@@ -141,20 +136,41 @@ int main(int argc, char *argv[])
         }
     } else {
         /* Command line mode: parse arguments and handle accordingly */
-        STRPTR args[3] = {NULL, NULL, NULL};  /* ERROR/K, GURU/S, VERBOSE/S */
+        STRPTR args[2] = {NULL, NULL};  /* ERROR/K, GURU/S */
         STRPTR errorArg = NULL;
         int i;  /* C89 compliance - declare at start of block */
+        int j;  /* C89 compliance - for implicit hex check */
+        
+        /* First, check for implicit hex numbers before ReadArgs processing */
+        /* This handles cases like "insight 8000000B" where no ERROR keyword is used */
+        for (j = 1; j < argc; j++) {
+            if (LooksLikeHexNumber(argv[j])) {
+                /* Found a hex number - copy to buffer */
+                static char errorBufferImplicit[32];
+                int k;
+                
+                memset(errorBufferImplicit, 0, sizeof(errorBufferImplicit));
+                k = 0;
+                while (k < sizeof(errorBufferImplicit) - 1 && argv[j][k] != '\0') {
+                    errorBufferImplicit[k] = argv[j][k];
+                    k++;
+                }
+                errorBufferImplicit[k] = '\0';
+                errorArg = errorBufferImplicit;
+                break;  /* Use first hex number found */
+            }
+        }
         
         /* Parse command line arguments */
         
-        rdargs = ReadArgs("ERROR/K,GURU/S,VERBOSE/S", (LONG *)args, NULL);
+        rdargs = ReadArgs("ERROR/K,GURU/S", (LONG *)args, NULL);
         if (rdargs != NULL) {
-            /* Set flags first so we can use them in debug output */
+            /* Set flags */
             testMode = (args[1] != NULL);      /* GURU/S is a switch */
-            verbose = (args[2] != NULL);       /* VERBOSE/S is a switch */
             
             /* Copy the string content before freeing the args */
-            if (args[0] != NULL) {
+            /* Only use ReadArgs result if we didn't already find an implicit hex number */
+            if (args[0] != NULL && errorArg == NULL) {
                 /* Use a local buffer to store the error argument */
                 static char errorBuffer[32];  /* Buffer for error code (max 8 hex chars + 0x prefix + null) */
                 
@@ -170,9 +186,8 @@ int main(int argc, char *argv[])
                 errorBuffer[i] = '\0';  /* Ensure null termination */
                 
                 errorArg = errorBuffer;
-            } else {
-                errorArg = NULL;
             }
+            /* If errorArg is still NULL here, we'll check for implicit hex numbers below */
             
             FreeArgs(rdargs);
         } else {
@@ -192,16 +207,52 @@ int main(int argc, char *argv[])
                 } else if (argv[i][0] == 'G' && argv[i][1] == 'U' && argv[i][2] == 'R' && 
                            argv[i][3] == 'U' && argv[i][4] == '\0') {
                     testMode = TRUE;
-                } else if (argv[i][0] == 'V' && argv[i][1] == 'E' && argv[i][2] == 'R' && 
-                           argv[i][3] == 'B' && argv[i][4] == 'O' && argv[i][5] == 'S' && 
-                           argv[i][6] == 'E' && argv[i][7] == '\0') {
-                    verbose = TRUE;
+                } else if (errorArg == NULL && LooksLikeHexNumber(argv[i])) {
+                    /* Implicit ERROR: if argument looks like a hex number, treat it as error code */
+                    /* Copy to buffer to avoid issues with string pointers */
+                    static char errorBufferFallback[32];
+                    int k;
+                    
+                    memset(errorBufferFallback, 0, sizeof(errorBufferFallback));
+                    k = 0;
+                    while (k < sizeof(errorBufferFallback) - 1 && argv[i][k] != '\0') {
+                        errorBufferFallback[k] = argv[i][k];
+                        k++;
+                    }
+                    errorBufferFallback[k] = '\0';
+                    errorArg = errorBufferFallback;
+                }
+            }
+        }
+        
+        /* If ReadArgs succeeded but didn't find ERROR, and we haven't found an implicit hex number yet, check again */
+        /* (This handles the case where ReadArgs processed the arguments but didn't match ERROR keyword) */
+        if (rdargs != NULL && errorArg == NULL) {
+            for (j = 1; j < argc; j++) {
+                if (LooksLikeHexNumber(argv[j])) {
+                    /* Use a local buffer to store the error argument */
+                    static char errorBufferReadArgs[32];  /* Buffer for error code (max 8 hex chars + 0x prefix + null) */
+                    int k;  /* C89 compliance - character index */
+                    
+                    /* Clear the buffer first */
+                    memset(errorBufferReadArgs, 0, sizeof(errorBufferReadArgs));
+                    
+                    /* Copy the string manually character by character */
+                    k = 0;
+                    while (k < sizeof(errorBufferReadArgs) - 1 && argv[j][k] != '\0') {
+                        errorBufferReadArgs[k] = argv[j][k];
+                        k++;
+                    }
+                    errorBufferReadArgs[k] = '\0';  /* Ensure null termination */
+                    
+                    errorArg = errorBufferReadArgs;
+                    break;
                 }
             }
         }
         
         /* If we have arguments but ReadArgs failed and we didn't find any valid parameters, exit */
-        if (argc > 1 && errorArg == NULL && !testMode && !verbose) {
+        if (argc > 1 && errorArg == NULL && !testMode) {
             SafeExit(RETURN_OK);
         }
         
@@ -224,27 +275,34 @@ int main(int argc, char *argv[])
         /* Determine what to do based on parameters */
         if (errorArg != NULL) {
             /* ERROR parameter specified - parse and show specific error */
-
-            guruCode = HexStringToULong(errorArg);
-            /* Check if parsing was successful - HexStringToULong returns (ULONG)-1 for invalid input */
-            if (guruCode != (ULONG)-1) {
-                errorInfo = GainInsight(guruCode);
-                if (errorInfo != NULL) {
-                    if (testMode) {
-                        ShowErrorDialog(guruCode, errorInfo->description, errorInfo->insight, 0);
-                    }
-                    /* Always show error information when ERROR parameter is specified */
-                    Printf("Error Code: 0x%08X\nError: %s\n%s\n", 
-                           guruCode, errorInfo->description, errorInfo->insight);
-                    success = TRUE;  /* Successfully parsed and displayed error */
-                    FreeErrorInfo(errorInfo);  /* Free allocated memory */
-                } else {
-                    Printf("Unknown error code: 0x%08X\n", guruCode);
-                    success = FALSE;  /* Error code not found */
-                }
+            /* First validate that it's exactly 8 hex digits */
+            if (!ValidateHexErrorCode(errorArg)) {
+                Printf("Error: Invalid error code format. Error code must be exactly 8 hexadecimal digits.\n");
+                Printf("Example: 8000000B or 0x8000000B\n");
+                success = FALSE;
             } else {
-                Printf("Invalid error code format. Use ERROR=0xXXXXXXXX\n");
-                success = FALSE;  /* Invalid format */
+                guruCode = HexStringToULong(errorArg);
+                
+                /* Check if parsing was successful - HexStringToULong returns (ULONG)-1 for invalid input */
+                if (guruCode != (ULONG)-1) {
+                    errorInfo = GainInsight(guruCode);
+                    if (errorInfo != NULL) {
+                        if (testMode) {
+                            ShowErrorDialog(guruCode, errorInfo->description, errorInfo->insight, 0);
+                        }
+                        /* Always show error information when ERROR parameter is specified */
+                        Printf("Error Code: 0x%08lX\nError: %s\n%s\n", 
+                               guruCode, errorInfo->description, errorInfo->insight);
+                        success = TRUE;  /* Successfully parsed and displayed error */
+                        FreeErrorInfo(errorInfo);  /* Free allocated memory */
+                    } else {
+                        Printf("Unknown error code: 0x%08lX\n", guruCode);
+                        success = FALSE;  /* Error code not found */
+                    }
+                } else {
+                    Printf("Error: Failed to parse error code. Use format: 8000000B or 0x8000000B\n");
+                    success = FALSE;  /* Invalid format */
+                }
             }
         } else if (testMode) {
             /* GURU parameter - show random error */
@@ -259,32 +317,29 @@ int main(int argc, char *argv[])
                 
                 FreeErrorInfo(errorInfo);  /* Free allocated memory */
             } else {
-                Printf("Failed to lookup error code 0x%08X\n", guruCode);
+                Printf("Failed to lookup error code 0x%08lX\n", guruCode);
                 success = FALSE;
             }
         } else {
             /* No special parameters - check SysBase LastAlert */
             /* LastAlert[4] is an array containing the last 4 system alert codes */
             /* The 4 LONG values together form the complete error code */
-            guruCode = ParseLastAlert(&taskID, verbose);
+            guruCode = ParseLastAlert(&taskID);
             
             /* Check if there's actually an error code (not -1) */
             /* According to Amiga documentation, LastAlert[0] = -1 (0xFFFFFFFF) means no error */
             if (guruCode == (ULONG)-1) {
                 /* No error - this is normal, not a failure */
-                if (verbose) {
-                    Printf("Insight: No meditation\n");
-                }
                 success = TRUE;  /* Successfully determined no error exists */
             } else {
                 /* Error exists - parse the error code and print to console */
                 errorInfo = GainInsight(guruCode);
                 if (errorInfo != NULL) {
-                    Printf("Error Code: 0x%08X\n\nTask ID: 0x%08X\n\nError: %s\n\n%s\n", 
+                    Printf("Error Code: 0x%08lX\n\nTask ID: 0x%08lX\n\nError: %s\n\n%s\n", 
                            guruCode, taskID, errorInfo->description, errorInfo->insight);
                     FreeErrorInfo(errorInfo);  /* Free allocated memory */
                 } else {
-                    Printf("Error Code: 0x%08X\n\nTask ID: 0x%08X\n\nError: Unknown Error\n\nNo Insight for this error code.\n", 
+                    Printf("Error Code: 0x%08lX\n\nTask ID: 0x%08lX\n\nError: Unknown Error\n\nNo Insight for this error code.\n", 
                            guruCode, taskID);
                 }
                 success = FALSE;  /* Exit with failure status since there was an error */
@@ -588,57 +643,194 @@ BOOL CheckWorkbenchStartup(VOID)
  * @brief Converts a hexadecimal string to a ULONG.
  * @param hexString The null-terminated string containing the hex value.
  * @return The converted ULONG value.
+ * 
+ * This function parses hex strings the same way ParseLastAlert reads ULONG values
+ * from memory - as a big-endian 32-bit value. The string is processed left-to-right,
+ * with each character representing 4 bits, building the value from most significant
+ * to least significant digit.
  */
 ULONG HexStringToULong(STRPTR hexString) {
-    ULONG result = 0;
-    STRPTR current = hexString;
-    ULONG tempChar;
-    ULONG tempDigit;
+    ULONG result;
+    char localBuffer[32];
+    int startIdx;
+    int idx;
+    int digitCount;
+    unsigned char charVal;
+    ULONG digitVal;
     int i;
-
-    // Check for NULL pointer or empty string
-    if (hexString == NULL || *hexString == '\0') {
+    
+    /* Initialize all variables - C89 compliance */
+    result = 0;
+    startIdx = 0;
+    idx = 0;
+    digitCount = 0;
+    charVal = 0;
+    digitVal = 0;
+    
+    /* Check for NULL pointer or empty string */
+    if (hexString == NULL || hexString[0] == '\0') {
         return (ULONG)-1;
     }
 
-    // Skip "0x" prefix if present
+    /* Copy string to local buffer */
+    i = 0;
+    while (i < 31 && hexString[i] != '\0') {
+        localBuffer[i] = hexString[i];
+        i++;
+    }
+    localBuffer[i] = '\0';
+
+    /* Skip "0x" prefix if present */
+    if (localBuffer[0] == '0' && (localBuffer[1] == 'x' || localBuffer[1] == 'X')) {
+        startIdx = 2;
+    }
+
+    /* Check if we have at least one character after prefix */
+    if (localBuffer[startIdx] == '\0') {
+        return (ULONG)-1;
+    }
+
+    /* Process each character from left to right using while loop */
+    i = startIdx;
+    
+    while (i < 32 && localBuffer[i] != '\0' && digitCount < 8) {
+        charVal = (unsigned char)localBuffer[i];
+        
+        /* Convert to uppercase */
+        if (charVal >= 'a' && charVal <= 'z') {
+            charVal = charVal - 'a' + 'A';
+        }
+        
+        /* Convert hex char to digit value */
+        if (charVal >= '0' && charVal <= '9') {
+            digitVal = charVal - '0';
+        } else if (charVal >= 'A' && charVal <= 'F') {
+            digitVal = charVal - 'A' + 10;
+        } else {
+            return (ULONG)-1;
+        }
+        
+        /* Shift result left by 4 bits and add new digit */
+        result = (result << 4) | digitVal;
+        
+        digitCount = digitCount + 1;
+        i = i + 1;
+    }
+    
+    idx = i;  /* Set idx for later checks */
+    
+    /* Check for too many digits */
+    if (localBuffer[idx] != '\0') {
+        return (ULONG)-1;
+    }
+    
+    /* Must have exactly 8 digits */
+    if (digitCount != 8) {
+        return (ULONG)-1;
+    }
+    
+    return result;
+}
+
+/**
+ * @brief Checks if a string looks like a hexadecimal number.
+ * @param str The null-terminated string to check.
+ * @return TRUE if the string looks like a hex number, FALSE otherwise.
+ * 
+ * A string looks like a hex number if:
+ * - It starts with "0x" or "0X" followed by one or more hex digits, OR
+ * - It consists entirely of hex digits (0-9, A-F, a-f)
+ */
+BOOL LooksLikeHexNumber(STRPTR str) {
+    STRPTR current;
+    unsigned char tempChar;
+    
+    /* Check for NULL pointer or empty string */
+    if (str == NULL || *str == '\0') {
+        return FALSE;
+    }
+    
+    current = str;
+    
+    /* Skip "0x" or "0X" prefix if present */
     if (current[0] == '0' && (current[1] == 'x' || current[1] == 'X')) {
         current += 2;
+        /* After 0x prefix, we must have at least one hex digit */
+        if (*current == '\0') {
+            return FALSE;
+        }
     }
-
-    // Check if we have at least one character after prefix
-    if (*current == '\0') {
-        return (ULONG)-1;  // Empty string after prefix
-    }
-
-    // Process each character of the string
+    
+    /* Check if remaining characters are all hex digits */
     while (*current != '\0') {
-        tempChar = *current;
+        tempChar = (unsigned char)*current;
         
-        // Convert to uppercase for case-insensitive processing
+        /* Convert to uppercase for case-insensitive processing */
         if (tempChar >= 'a' && tempChar <= 'z') {
             tempChar = tempChar - 'a' + 'A';
         }
         
-        // Convert the hex character to its integer value
-        if (tempChar >= '0' && tempChar <= '9') {
-            tempDigit = tempChar - '0';
-        } else if (tempChar >= 'A' && tempChar <= 'F') {
-            tempDigit = tempChar - 'A' + 10;
-        } else {
-            // Invalid character encountered, return (ULONG)-1 as error indicator
-            return (ULONG)-1;
+        /* Check if it's a valid hex digit */
+        if (!((tempChar >= '0' && tempChar <= '9') || 
+              (tempChar >= 'A' && tempChar <= 'F'))) {
+            return FALSE;  /* Invalid character found */
         }
-        
-        // Left-shift the current result by 4 bits and add the new digit.
-        // This is the correct method for building a number from a string
-        // regardless of machine endianness.
-        result = (result << 4) | tempDigit;
         
         current++;
     }
     
-    return result;
+    /* All characters are valid hex digits */
+    return TRUE;
+}
+
+/**
+ * @brief Validates that a string is exactly 8 hexadecimal digits.
+ * @param hexString The null-terminated string to validate.
+ * @return TRUE if the string is exactly 8 hex digits (with or without 0x prefix), FALSE otherwise.
+ * 
+ * This function ensures the error code is exactly 8 hex digits, which represents a 32-bit value.
+ * The string may optionally start with "0x" or "0X" prefix.
+ */
+BOOL ValidateHexErrorCode(STRPTR hexString) {
+    STRPTR current;
+    int digitCount = 0;
+    unsigned char tempChar;
+    
+    /* Check for NULL pointer or empty string */
+    if (hexString == NULL || *hexString == '\0') {
+        return FALSE;
+    }
+    
+    current = hexString;
+    
+    /* Skip "0x" or "0X" prefix if present */
+    if (current[0] == '0' && (current[1] == 'x' || current[1] == 'X')) {
+        current += 2;
+    }
+    
+    /* Count hex digits - must be exactly 8 */
+    while (*current != '\0') {
+        tempChar = (unsigned char)*current;
+        
+        /* Convert to uppercase for case-insensitive processing */
+        if (tempChar >= 'a' && tempChar <= 'z') {
+            tempChar = tempChar - 'a' + 'A';
+        }
+        
+        /* Check if it's a valid hex digit */
+        if ((tempChar >= '0' && tempChar <= '9') || 
+            (tempChar >= 'A' && tempChar <= 'F')) {
+            digitCount++;
+        } else {
+            /* Invalid character found */
+            return FALSE;
+        }
+        
+        current++;
+    }
+    
+    /* Must be exactly 8 hex digits */
+    return (digitCount == 8);
 }
 
 /*
@@ -651,7 +843,7 @@ ULONG HexStringToULong(STRPTR hexString) {
  * - LastAlert[2] contains more error context
  * - LastAlert[3] contains the Task ID that caused the error
  */
-ULONG ParseLastAlert(ULONG *taskID, BOOL verbose) {
+ULONG ParseLastAlert(ULONG *taskID) {
     ULONG errorCode = (ULONG)-1;
     struct ExecBase *sysBase;
     ULONG *guruData, guruFromMemory;
@@ -663,9 +855,6 @@ ULONG ParseLastAlert(ULONG *taskID, BOOL verbose) {
     // Fallback: if direct access fails, try the global SysBase variable
     if (sysBase == NULL && SysBase != NULL) {
         sysBase = SysBase;
-        if (verbose) {
-            Printf("ParseLastAlert: Using fallback global SysBase\n");
-        }
     }
     
     if (sysBase != NULL) {
@@ -691,9 +880,6 @@ ULONG ParseLastAlert(ULONG *taskID, BOOL verbose) {
             }
         }
     } else {
-        if (verbose) {
-            Printf("ParseLastAlert: Could not get SysBase from address 4 or global variable\n");
-        }
         *taskID = 0;
     }
     

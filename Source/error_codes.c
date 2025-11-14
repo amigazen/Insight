@@ -659,51 +659,72 @@
   /* Number of entries in the error table */
   const ULONG ERROR_TABLE_SIZE = sizeof(errorTable) / sizeof(struct ErrorInfo);
   
-   /*
-   * Look up error code in the table
-   */
-  struct ErrorInfo* GainInsight(ULONG errorCode)
-  {
-      ULONG i;
-      struct ErrorInfo *expandedError;
-      STRPTR expandedExplanation;
+  /*
+  * Look up error code in the table using binary search
+  * The table must be sorted by error code for this to work correctly
+  */
+ struct ErrorInfo* GainInsight(ULONG errorCode)
+ {
+     ULONG left;
+     ULONG right;
+     ULONG mid;
+     ULONG tableSize;
+     struct ErrorInfo *expandedError;
+     STRPTR expandedExplanation;
 
-      for (i = 0; i < ERROR_TABLE_SIZE - 1; i++) {
-          if (errorTable[i].code == errorCode) {
-              /* Allocate fresh memory for the expanded error info */
-              expandedError = (struct ErrorInfo *)malloc(sizeof(struct ErrorInfo));
-              if (expandedError == NULL) {
-                  /* Memory allocation failed - return NULL */
-                  return NULL;
-              }
-              
-              /* Expand the explanation */
-              expandedExplanation = ExpandExplanation(errorTable[i].insight);
-              if (expandedExplanation == NULL) {
-                  /* Expansion failed - free allocated memory and return NULL */
-                  free(expandedError);
-                  return NULL;
-              }
-              
-              /* Allocate fresh memory for the expanded explanation string */
-              expandedError->insight = strdup(expandedExplanation);
-              if (expandedError->insight == NULL) {
-                  /* String allocation failed - free allocated memory and return NULL */
-                  free(expandedError);
-                  return NULL;
-              }
-              
-              /* Copy the other fields (these are static strings, so just copy pointers) */
-              expandedError->code = errorTable[i].code;
-              expandedError->description = errorTable[i].description;
-              
-              return expandedError;
-          }
-      }
-      
-      /* Return NULL if not found */
-      return NULL;
-  }
+     /* Exclude the end marker (0xFFFFFFFF) from search */
+     tableSize = ERROR_TABLE_SIZE - 1;
+     
+     /* Binary search */
+     left = 0;
+     right = tableSize - 1;
+     
+     while (left <= right) {
+         mid = left + ((right - left) / 2);
+         
+         if (errorTable[mid].code == errorCode) {
+             /* Match found! */
+             
+             /* Allocate fresh memory for the expanded error info */
+             expandedError = (struct ErrorInfo *)malloc(sizeof(struct ErrorInfo));
+             if (expandedError == NULL) {
+                 /* Memory allocation failed - return NULL */
+                 return NULL;
+             }
+             
+             /* Expand the explanation */
+             expandedExplanation = ExpandExplanation(errorTable[mid].insight);
+             if (expandedExplanation == NULL) {
+                 /* Expansion failed - free allocated memory and return NULL */
+                 free(expandedError);
+                 return NULL;
+             }
+             
+             /* Allocate fresh memory for the expanded explanation string */
+             expandedError->insight = strdup(expandedExplanation);
+             if (expandedError->insight == NULL) {
+                 /* String allocation failed - free allocated memory and return NULL */
+                 free(expandedError);
+                 return NULL;
+             }
+             
+             /* Copy the other fields (these are static strings, so just copy pointers) */
+             expandedError->code = errorTable[mid].code;
+             expandedError->description = errorTable[mid].description;
+             
+             return expandedError;
+         } else if (errorTable[mid].code < errorCode) {
+             /* Search in the right half */
+             left = mid + 1;
+         } else {
+             /* Search in the left half */
+             right = mid - 1;
+         }
+     }
+     
+     /* Return NULL if not found */
+     return NULL;
+ }
   
   /*
    * Free error info structure allocated by LookupError
