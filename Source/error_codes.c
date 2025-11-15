@@ -337,24 +337,6 @@
      { 0x01000010, "Attempt to use old message semaphores", "An obsolete semaphore API was used; this is a compatibility issue." },
      { 0x010000FF, "Quick interrupt to uninitialized vector", "A quick interrupt occurred on an uninitialized vector; similar to a spurious interrupt." },
  
-     /* Exec Library Specific Errors (0x81000000-0x810000FF) - DEADEND ALERTS */
-     { 0x81000001, "68000 exception vector checksum", "A fatal checksum error on the exception vector table. Look for wild pointer writes or buffer overflows in interrupt handlers. Check exception vector installation code." },
-     { 0x81000002, "Execbase checksum bad", "The core operating system library is corrupted. Look for buffer overflows in memory allocation routines, stack overflows, or heap corruption near exec.library." },
-     { 0x81000003, "Library checksum failure", "A loaded library's checksum is invalid. Check for corrupted library files, memory corruption during loading, or buffer overflows in library loading code." },
-     { 0x81000004, "No memory to make library", "Severe memory shortage prevented library creation. Look for memory leaks - unfreed memory blocks, unreleased resources, or infinite loops consuming memory." },
-     { 0x81000005, "Corrupt memory list", "The memory allocator's list is corrupted. Look for buffer overflows, use-after-free defects, or double-free defects. Check all memory allocation and deallocation calls and array bounds." },
-     { 0x81000006, "No memory for interrupt servers", "Critical resource exhaustion for interrupt handlers. Check for memory leaks in interrupt handlers or excessive interrupt registration without cleanup." },
-     { 0x81000007, "InitAPtr error", "A fatal InitStruct() failure. Check the source pointer passed to InitStruct() - ensure it's not NULL, corrupted, or uninitialized." },
-     { 0x81000008, "Semaphore corrupt", "A semaphore was in a fatal, illegal state. Look for missing ObtainSemaphore() calls, improper ReleaseSemaphore() calls, or uninitialized semaphores." },
-     { 0x81000009, "Free twice", "A double-free defect caused fatal memory management error. Look for code calling FreeMem() on the same pointer multiple times or use-after-free defects." },
-     { 0x8100000A, "Bogus exception", "An unhandled, critical exception occurred. Look for NULL pointer dereferences, array bounds violations, or corrupted function pointers." },
-     { 0x8100000B, "IO used twice", "A reuse of an active I/O request caused fatal error. Look for missing WaitIO() or AbortIO() calls before reusing IORequest structures." },
-     { 0x8100000C, "Memory insane", "The memory list is corrupted, causing fatal allocation failure. Look for severe heap corruption from buffer overflows, wild pointer writes, or array bounds violations." },
-     { 0x8100000D, "IO after close", "An I/O operation on a closed handle caused fatal error. Look for I/O operations after CloseDevice() calls or improper I/O request lifecycle management." },
-     { 0x8100000E, "Stack probe", "A fatal stack overflow or underflow was detected. Look for infinite recursion, excessive stack usage, or large local arrays causing stack overflow." },
-     { 0x8100000F, "Bad free address", "A attempt to free an invalid pointer caused unrecoverable error. Look for FreeMem() calls with corrupted pointers, uninitialized pointers, or pointer arithmetic errors." },
-     { 0x81000010, "Bad semaphore", "Use of obsolete semaphore API caused fatal compatibility issue. Look for outdated semaphore API usage. Update to current semaphore functions." },
- 
      /* Graphics Library Specific Errors (0x02000000-0x0200FFFF) - RECOVERY ALERTS */
      { 0x02010000, "Graphics out of memory", "Check for memory leaks in graphics-heavy applications or general system memory shortage." },
      { 0x02010001, "Monitorspec allocation failed", "A lack of memory or an excessive number of monitors caused this allocation failure." },
@@ -385,22 +367,11 @@
      { 0x0200000C, "Graphics new operation failed", "A memory allocation failure or a defect in the graphics library caused this object allocation to fail." },
      { 0x0200000D, "Could not free graphics", "A corrupted object or a `double-free` defect is the likely cause." },
      { 0x02011234, "Emergency memory not available", "The graphics library could not allocate emergency memory, indicating a severe, system-wide memory shortage." },
-     { 0x02000401, "Unsupported font description used", "The font file format is outdated or the file is corrupted." },
-     
-     /* Graphics Library Specific Errors (0x82000000-0x8200FFFF) - DEADEND ALERTS */
-     { 0x82010000, "Graphics out of memory", "A fatal graphics memory allocation failure occurred. Look for memory leaks in graphics operations - check for unfreed BitMaps, RastPorts, or ViewPorts." },
-     { 0x82010001, "MonitorSpec alloc", "A fatal error occurred while allocating memory for a monitor specification. Check for memory leaks in monitor handling code or excessive monitor creation without cleanup." },
-     { 0x82010006, "Long frame, no memory", "The system could not allocate a long frame buffer due to fatal memory allocation failure. Check for memory leaks in screen creation code or excessive screen resolution requests." },
-     { 0x82010007, "Short frame, no memory", "The system could not allocate a short frame buffer due to fatal memory allocation failure. Check for memory leaks in screen creation code or excessive screen creation." },
-     { 0x8201000A, "BltBitMap, no memory", "A bitmap blitting operation failed with fatal memory error. Check for memory leaks in bitmap operations or excessive bitmap creation without cleanup." },
-     { 0x8201000B, "Region memory", "A fatal region-related operation failed due to lack of memory. Check for memory leaks in region operations or excessive region creation without cleanup." },
-     { 0x82010030, "MakeVPort, no memory", "A MakeVPort() call failed fatally due to lack of memory or invalid viewport. Check for memory leaks in viewport creation code or excessive viewport creation." },
-     { 0x82011234, "Emergency memory not available", "A fatal system-wide memory shortage prevented graphics library from allocating emergency memory. Check for unfreed resources or infinite loops consuming memory." },
- 
+     { 0x02000401, "Unsupported font description used", "The font file format is outdated or the file is corrupted." },     
+
      /* Layers Library Errors (0x03000000-0x0300FFFF) */
      { 0x03010000, "Layers out of memory", "Check for memory leaks, or a system-wide memory shortage." },
-     { 0x83010000, "Layers out of memory", "A fatal memory shortage occurred when allocating a new layer. Look for memory leaks in layer creation code or excessive layer creation without cleanup." },
- 
+
      /* Intuition Library Errors (0x04000000-0x0400FFFF) - RECOVERY ALERTS */
      { 0x04000001, "Unknown gadget type", "Check for an incorrect gadget type constant or a corrupted gadget structure." },
      { 0x04010002, "Create port operation failed", "This is likely caused by an application creating too many ports without freeing them." },
@@ -432,24 +403,7 @@
      { 0x0401001C, "Bad message received by IDCMP", "A defect in the sending application caused a corrupted message to be received." },
      { 0x0401001D, "Weird echo causing incomprehension", "A defect in the message handling code is the likely cause." },
      { 0x0401001E, "Console device open failed", "A missing driver or a resource conflict is the likely cause." },
- 
-     /* Intuition Library Errors (0x84000000-0x8400FFFF) - DEADEND ALERTS */
-     { 0x84000001, "Unknown gadget type", "An unrecoverable error occurred when trying to create a gadget of an unknown type. Check for invalid gadget type constants or corrupted gadget structures." },
-     { 0x84010002, "Create port failed", "A critical memory allocation failure occurred when trying to create a port. Look for memory leaks in port creation code or excessive port creation without cleanup." },
-     { 0x84010003, "Item plane allocation failed", "A fatal memory error occurred while allocating memory for a menu item plane. Check for memory leaks in menu creation code or excessive menu items." },
-     { 0x84010004, "Sub allocation failed", "A critical sub-allocation operation within Intuition failed. Look for memory leaks in Intuition operations or excessive resource creation." },
-     { 0x84010005, "Plane allocation failed", "A fatal memory allocation error occurred for a graphics plane. Check for insufficient graphics memory or memory leaks in graphics operations." },
-     { 0x84010006, "Item box top < RelZero", "A menu item's top coordinate was critically invalid. Check menu item bounding box coordinates and layout calculations." },
-     { 0x84010007, "OpenScreen failed", "A fatal error occurred while trying to open a screen due to memory or invalid screen mode. Check for memory leaks in screen creation or invalid screen mode requests." },
-     { 0x84010008, "OpenScreen raster allocation failed", "A critical memory allocation failure occurred for the screen's raster. Check for memory leaks in screen creation or excessive screen resolution requests." },
-     { 0x84000009, "Open system screen failed", "A fatal error occurred when trying to open an invalid system screen. Check screen mode settings and system screen configuration." },
-     { 0x8401000A, "Add SW gadgets failed", "An unrecoverable error occurred when adding a software gadget. Check for memory leaks in gadget creation or corrupted gadget structures." },
-     { 0x8401000B, "Open window failed", "A fatal error occurred while trying to open a window. Check for memory leaks in window creation or invalid window configuration." },
-     { 0x8400000C, "Bad state return entering Intuition", "The Intuition library was entered in a fatal, invalid state. Check for improper API call sequences or corrupted library state." },
-     { 0x8400000D, "Bad message received by IDCMP", "A corrupted message was received by the IDCMP, causing an unrecoverable error. Check for defects in the sending application or corrupted message structures." },
-     { 0x8400000E, "Weird echo causing incomprehension", "A fatal defect in message handling code caused an invalid echo message. Check message handling logic for defects or corrupted message processing." },
-     { 0x8400000F, "Couldn't open console device", "A fatal error occurred when trying to open the console device. Check for missing drivers, resource conflicts, or console device configuration issues." },
-     
+
      /* Math Library Errors (0x05000000-0x0500FFFF) */
      { 0x05000001, "Math library out of memory", "Check for a memory leak or a large calculation causing a memory shortage." },
      { 0x05000002, "Math overflow error", "Check for large input values that cause the result to exceed representable limits." },
@@ -461,9 +415,7 @@
      /* Clist Library Errors (0x06000000-0x0600FFFF) */
      { 0x06000001, "Clist library out of memory", "A memory leak or a large number of clist operations caused a memory shortage." },
      { 0x06000002, "Invalid clist operation", "Check the function call for a defect." },
-     { 0x86000001, "Clist library out of memory", "A fatal memory shortage occurred when allocating clist memory. Look for memory leaks in clist operations or excessive clist creation without cleanup." },
-     { 0x86000002, "Invalid clist operation", "An unrecoverable operation was attempted on the clist library. Check the function call for defects or invalid parameters." },
- 
+
      /* DOS Library Errors (0x07000000-0x0700FFFF) */
      { 0x07010001, "No memory at startup", "A severe memory shortage prevented the DOS library from starting up." },
      { 0x07000002, "EndTask didn't end", "An infinite loop or an unreleased resource caused a task to fail termination." },
@@ -491,20 +443,7 @@
      { 0x07000018, "Bad overlay", "An overlay file is corrupted; this can be a file system error or a defect in the loading code." },
      { 0x07000019, "Invalid init packet for cli/shell", "A corrupted startup packet for the command line interface is the likely cause." },
      { 0x0700001A, "Filehandle closed more than once", "A file handle was closed more than once; this is a `double-close` defect." },
-     { 0x87000002, "EndTask didn't end", "A task failed to terminate correctly, causing a fatal error. Look for infinite loops, unreleased resources, or improper task cleanup." },
-     { 0x87000003, "Qpkt failure", "A fatal packet queuing failure occurred. Check for memory leaks in packet handling or corrupted packet structures." },
-     { 0x87000004, "Unexpected packet received", "A corrupted or unexpected packet caused a fatal error. Check for defects in message handling code or corrupted packet data." },
-     { 0x87000005, "Freevec failed", "A fatal attempt to free an exception vector failed. Check for corrupted vector tables or invalid vector addresses." },
-     { 0x87000006, "Disk block sequence error", "The logical block order on the disk is inconsistent, indicating fatal file system corruption. Check for hardware issues, corrupted filesystems, or improper disk operations." },
-     { 0x87000007, "Bitmap corrupt", "The file system's free block bitmap is corrupted, leading to a fatal error. Check for hardware issues, corrupted filesystems, or improper disk operations." },
-     { 0x87000008, "Key already free", "A file system key was in a fatal, illegal state. Check for filesystem corruption or defects in file system operations." },
-     { 0x87000009, "Invalid checksum", "A checksum verification failed on a data block, indicating a fatal data corruption error. Check for hardware issues, corrupted data, or improper data handling." },
-     { 0x8700000A, "Disk error", "A general disk I/O error occurred, leading to a fatal crash. Check for hardware issues, corrupted filesystems, or improper disk operations." },
-     { 0x8700000B, "Key out of range", "A file system key was found to be fatally outside the valid range. Check for filesystem corruption or defects in file system operations." },
-     { 0x8700000C, "Bad overlay", "An overlay file is corrupted, causing an unrecoverable error. Check for corrupted overlay files or defects in overlay loading code." },
-     { 0x8700000D, "Invalid init packet for cli/shell", "A corrupted startup packet for the command line interface caused an unrecoverable error. Check for corrupted startup configuration or defects in CLI initialization." },
-     { 0x8700000E, "Filehandle closed more than once", "A double-close defect on a file handle caused an unrecoverable error. Look for code that closes file handles multiple times or improper file handle lifecycle management." },
- 
+
      /* RAM Library Errors (0x08000000-0x0800FFFF) */
      { 0x08000001, "Overlays are illegal for library segments", "An attempt was made to use an overlay with a library segment; this is an unsupported operation." },
      { 0x08000002, "Bad segment list", "Overlay detected in library seglist; this is an unsupported operation." },
@@ -517,7 +456,19 @@
      
      /* Expansion Library Errors (0x0A000000-0x0A00FFFF) */
      { 0x0A000001, "Freed free region", "An attempt was made to free a region of expansion memory that was already deallocated; this is a `double-free` defect." },
-     
+     { 0x0A000002, "Expansion memory error", "A hardware fault on the expansion card is a likely cause." },
+     { 0x0A000003, "Expansion I/O error", "A hardware fault or a driver defect caused an I/O operation to fail." },
+     { 0x0A000004, "Expansion interrupt error", "This can be a driver defect or resource conflict; the interrupt was not handled correctly." },
+     { 0x0A000005, "Expansion DMA error", "Check for DMA conflicts or an invalid memory address involving the card." },
+     { 0x0A000006, "Expansion ROM error", "A hardware fault on the expansion card's ROM is a likely cause." },
+     { 0x0A000007, "Expansion driver error", "Check for a corrupted driver file or a defect in the driver's code." },
+     { 0x0A000008, "Expansion library error", "Inspect library initialization and calls for defects." },
+     { 0x0A000009, "Expansion configuration error", "Review the expansion card's configuration settings for errors." },
+     { 0x0A00000A, "Expansion initialization error", "A resource conflict or a hardware fault prevented the card from initializing." },
+     { 0x0A00000B, "Expansion detection error", "Check the physical connection and the card's health." },
+     { 0x0A00000C, "Expansion compatibility error", "A version mismatch or hardware limitation caused the card to be incompatible with the system." },
+     { 0x0A00000D, "Expansion power error", "The card is not receiving sufficient power; check the power supply and card's power draw." },
+          
      /* DiskFont Library Errors (0x0B000000-0x0B00FFFF) */
      { 0x0B000001, "DiskFont library out of memory", "A memory leak or a large number of fonts caused a memory shortage." },
      { 0x0B000002, "Invalid font format", "The font file is in an invalid format; check for a corrupted file or an unsupported format." },
@@ -569,22 +520,7 @@
      /* Misc Library Errors (0x22000000-0x2200FFFF) */
      { 0x22000001, "Misc library out of memory", "A memory leak is a likely cause." },
      { 0x22000002, "Invalid misc operation", "Check the function call for a defect." },
-     
-     /* Expansion Library Errors (0x0A000000-0x0A00FFFF) */
-     { 0x0A000001, "Freed free region", "An attempt was made to free a region of expansion memory that was already deallocated; this is a `double-free` defect." },
-     { 0x0A000002, "Expansion memory error", "A hardware fault on the expansion card is a likely cause." },
-     { 0x0A000003, "Expansion I/O error", "A hardware fault or a driver defect caused an I/O operation to fail." },
-     { 0x0A000004, "Expansion interrupt error", "This can be a driver defect or resource conflict; the interrupt was not handled correctly." },
-     { 0x0A000005, "Expansion DMA error", "Check for DMA conflicts or an invalid memory address involving the card." },
-     { 0x0A000006, "Expansion ROM error", "A hardware fault on the expansion card's ROM is a likely cause." },
-     { 0x0A000007, "Expansion driver error", "Check for a corrupted driver file or a defect in the driver's code." },
-     { 0x0A000008, "Expansion library error", "Inspect library initialization and calls for defects." },
-     { 0x0A000009, "Expansion configuration error", "Review the expansion card's configuration settings for errors." },
-     { 0x0A00000A, "Expansion initialization error", "A resource conflict or a hardware fault prevented the card from initializing." },
-     { 0x0A00000B, "Expansion detection error", "Check the physical connection and the card's health." },
-     { 0x0A00000C, "Expansion compatibility error", "A version mismatch or hardware limitation caused the card to be incompatible with the system." },
-     { 0x0A00000D, "Expansion power error", "The card is not receiving sufficient power; check the power supply and card's power draw." },
-     
+
      /* Bootstrap Errors (0x30000000-0x3000FFFF) */
      { 0x30000001, "Boot code returned an error", "This is a critical, unrecoverable error; check for a corrupted bootblock." },
      { 0x30000002, "Bootstrap error", "A critical, unrecoverable error occurred during system bootstrap; check for a corrupted bootblock." },
@@ -612,6 +548,103 @@
      { 0x31010014, "GadTools library", "A critical, unrecoverable error occurred in the GadTools library." },
      { 0x31010015, "Utility library", "A critical, unrecoverable error occurred in the utility library." },
      { 0x31010016, "Unknown", "An unknown, unrecoverable error occurred." },
+
+     /* DiskCopy Library Errors (0x32000000-0x3200FFFF) */
+     { 0x32000001, "DiskCopy library out of memory", "A memory leak or a large number of DiskCopy operations caused a memory shortage." },
+     { 0x32000002, "Invalid DiskCopy operation", "Check the function call for a defect." },
+     
+     /* GadTools Library Errors (0x33000000-0x3300FFFF) */
+     { 0x33000001, "GadTools library out of memory", "A memory leak or a large number of gadgets caused a memory shortage." },
+     { 0x33000002, "Invalid GadTools operation", "Check the function call for a defect." },
+
+     /* CPU Exceptions with Deadend Bit Set (0x80000000-0x8000FFFF) */
+     { 0x80000000, "Deadend Alert", "A fatal system error occurred with the deadend bit set. This indicates an unrecoverable error that requires system reboot." },
+     { 0x80000001, "Task held", "A fatal task synchronization error occurred. Look for improper task synchronization, missing Resume() calls, or deadlocks in task management." },
+     { 0x80000002, "Bus Error", "A fatal hardware bus fault occurred. Look for memory access violations, corrupted pointers, or hardware memory faults." },
+     { 0x80000003, "Address Error", "An illegal address access occurred. Look for unaligned memory access, corrupted pointers, or invalid memory addresses." },
+     { 0x80000004, "Illegal Instruction", "An illegal CPU instruction was encountered. Look for corrupted code, wild jumps into data, or corrupted function pointers." },
+     { 0x80000005, "Division by Zero", "An integer division by zero was attempted. Look for uninitialized variables, missing validation, or corrupted divisor values." },
+     { 0x80000006, "CHK Instruction", "A bounds check failed. Look for array bounds violations, loop boundary errors, or corrupted array indices." },
+     { 0x80000007, "TRAPV Instruction", "An overflow was detected. Look for arithmetic operations that exceed integer limits or missing overflow checks." },
+     { 0x80000008, "Privilege Violation", "A program attempted to execute a privileged instruction. Look for code running in wrong privilege mode or corrupted instruction pointers." },
+     { 0x80000009, "Trace", "A trace exception occurred. Look for debugging code left in production or corrupted trace flags." },
+     { 0x8000000A, "Line 1010 Emulator", "An FPU instruction was run without coprocessor, most likely to be caused by executing data as code." },
+     { 0x8000000B, "Line 1111 Emulator", "An FPU instruction was run without coprocessor, most likely to be caused by executing data as code." },
+     { 0x8000000E, "Stack frame format error", "A corrupted stack frame caused a fatal error. Look for stack corruption, buffer overflows, or corrupted return addresses." },
+     { 0x80000018, "Spurious interrupt error", "An unexpected and unhandled interrupt occurred. Look for missing interrupt handlers, corrupted interrupt vectors, or hardware glitches." },
+     { 0x80000019, "Autovector Level 1", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
+     { 0x8000001A, "Autovector Level 2", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
+     { 0x8000001B, "Autovector Level 3", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
+     { 0x8000001C, "Autovector Level 4", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
+     { 0x8000001D, "Autovector Level 5", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
+     { 0x8000001E, "Autovector Level 6", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
+     { 0x8000001F, "Autovector Level 7", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
+
+     /* Exec Library Specific Errors (0x81000000-0x810000FF) - DEADEND ALERTS */
+     { 0x81000001, "68000 exception vector checksum", "A fatal checksum error on the exception vector table. Look for wild pointer writes or buffer overflows in interrupt handlers. Check exception vector installation code." },
+     { 0x81000002, "Execbase checksum bad", "The core operating system library is corrupted. Look for buffer overflows in memory allocation routines, stack overflows, or heap corruption near exec.library." },
+     { 0x81000003, "Library checksum failure", "A loaded library's checksum is invalid. Check for corrupted library files, memory corruption during loading, or buffer overflows in library loading code." },
+     { 0x81000004, "No memory to make library", "Severe memory shortage prevented library creation. Look for memory leaks - unfreed memory blocks, unreleased resources, or infinite loops consuming memory." },
+     { 0x81000005, "Corrupt memory list", "The memory allocator's list is corrupted. Look for buffer overflows, use-after-free defects, or double-free defects. Check all memory allocation and deallocation calls and array bounds." },
+     { 0x81000006, "No memory for interrupt servers", "Critical resource exhaustion for interrupt handlers. Check for memory leaks in interrupt handlers or excessive interrupt registration without cleanup." },
+     { 0x81000007, "InitAPtr error", "A fatal InitStruct() failure. Check the source pointer passed to InitStruct() - ensure it's not NULL, corrupted, or uninitialized." },
+     { 0x81000008, "Semaphore corrupt", "A semaphore was in a fatal, illegal state. Look for missing ObtainSemaphore() calls, improper ReleaseSemaphore() calls, or uninitialized semaphores." },
+     { 0x81000009, "Free twice", "A double-free defect caused fatal memory management error. Look for code calling FreeMem() on the same pointer multiple times or use-after-free defects." },
+     { 0x8100000A, "Bogus exception", "An unhandled, critical exception occurred. Look for NULL pointer dereferences, array bounds violations, or corrupted function pointers." },
+     { 0x8100000B, "IO used twice", "A reuse of an active I/O request caused fatal error. Look for missing WaitIO() or AbortIO() calls before reusing IORequest structures." },
+     { 0x8100000C, "Memory insane", "The memory list is corrupted, causing fatal allocation failure. Look for severe heap corruption from buffer overflows, wild pointer writes, or array bounds violations." },
+     { 0x8100000D, "IO after close", "An I/O operation on a closed handle caused fatal error. Look for I/O operations after CloseDevice() calls or improper I/O request lifecycle management." },
+     { 0x8100000E, "Stack probe", "A fatal stack overflow or underflow was detected. Look for infinite recursion, excessive stack usage, or large local arrays causing stack overflow." },
+     { 0x8100000F, "Bad free address", "A attempt to free an invalid pointer caused unrecoverable error. Look for FreeMem() calls with corrupted pointers, uninitialized pointers, or pointer arithmetic errors." },
+     { 0x81000010, "Bad semaphore", "Use of obsolete semaphore API caused fatal compatibility issue. Look for outdated semaphore API usage. Update to current semaphore functions." },     
+
+     /* Graphics Library Specific Errors (0x82000000-0x8200FFFF) - DEADEND ALERTS */
+     { 0x82010000, "Graphics out of memory", "A fatal graphics memory allocation failure occurred. Look for memory leaks in graphics operations - check for unfreed BitMaps, RastPorts, or ViewPorts." },
+     { 0x82010001, "MonitorSpec alloc", "A fatal error occurred while allocating memory for a monitor specification. Check for memory leaks in monitor handling code or excessive monitor creation without cleanup." },
+     { 0x82010006, "Long frame, no memory", "The system could not allocate a long frame buffer due to fatal memory allocation failure. Check for memory leaks in screen creation code or excessive screen resolution requests." },
+     { 0x82010007, "Short frame, no memory", "The system could not allocate a short frame buffer due to fatal memory allocation failure. Check for memory leaks in screen creation code or excessive screen creation." },
+     { 0x8201000A, "BltBitMap, no memory", "A bitmap blitting operation failed with fatal memory error. Check for memory leaks in bitmap operations or excessive bitmap creation without cleanup." },
+     { 0x8201000B, "Region memory", "A fatal region-related operation failed due to lack of memory. Check for memory leaks in region operations or excessive region creation without cleanup." },
+     { 0x82010030, "MakeVPort, no memory", "A MakeVPort() call failed fatally due to lack of memory or invalid viewport. Check for memory leaks in viewport creation code or excessive viewport creation." },
+     { 0x82011234, "Emergency memory not available", "A fatal system-wide memory shortage prevented graphics library from allocating emergency memory. Check for unfreed resources or infinite loops consuming memory." },
+     
+     /* Layers Library Errors (0x83000000-0x8300FFFF) - DEADEND ALERTS */
+     { 0x83010000, "Layers out of memory", "A fatal memory shortage occurred when allocating a new layer. Look for memory leaks in layer creation code or excessive layer creation without cleanup." },
+
+     /* Intuition Library Errors (0x84000000-0x8400FFFF) - DEADEND ALERTS */
+     { 0x84000001, "Unknown gadget type", "An unrecoverable error occurred when trying to create a gadget of an unknown type. Check for invalid gadget type constants or corrupted gadget structures." },
+     { 0x84010002, "Create port failed", "A critical memory allocation failure occurred when trying to create a port. Look for memory leaks in port creation code or excessive port creation without cleanup." },
+     { 0x84010003, "Item plane allocation failed", "A fatal memory error occurred while allocating memory for a menu item plane. Check for memory leaks in menu creation code or excessive menu items." },
+     { 0x84010004, "Sub allocation failed", "A critical sub-allocation operation within Intuition failed. Look for memory leaks in Intuition operations or excessive resource creation." },
+     { 0x84010005, "Plane allocation failed", "A fatal memory allocation error occurred for a graphics plane. Check for insufficient graphics memory or memory leaks in graphics operations." },
+     { 0x84010006, "Item box top < RelZero", "A menu item's top coordinate was critically invalid. Check menu item bounding box coordinates and layout calculations." },
+     { 0x84010007, "OpenScreen failed", "A fatal error occurred while trying to open a screen due to memory or invalid screen mode. Check for memory leaks in screen creation or invalid screen mode requests." },
+     { 0x84010008, "OpenScreen raster allocation failed", "A critical memory allocation failure occurred for the screen's raster. Check for memory leaks in screen creation or excessive screen resolution requests." },
+     { 0x84000009, "Open system screen failed", "A fatal error occurred when trying to open an invalid system screen. Check screen mode settings and system screen configuration." },
+     { 0x8401000A, "Add SW gadgets failed", "An unrecoverable error occurred when adding a software gadget. Check for memory leaks in gadget creation or corrupted gadget structures." },
+     { 0x8401000B, "Open window failed", "A fatal error occurred while trying to open a window. Check for memory leaks in window creation or invalid window configuration." },
+     { 0x8400000C, "Bad state return entering Intuition", "The Intuition library was entered in a fatal, invalid state. Check for improper API call sequences or corrupted library state." },
+     { 0x8400000D, "Bad message received by IDCMP", "A corrupted message was received by the IDCMP, causing an unrecoverable error. Check for defects in the sending application or corrupted message structures." },
+     { 0x8400000E, "Weird echo causing incomprehension", "A fatal defect in message handling code caused an invalid echo message. Check message handling logic for defects or corrupted message processing." },
+     { 0x8400000F, "Couldn't open console device", "A fatal error occurred when trying to open the console device. Check for missing drivers, resource conflicts, or console device configuration issues." },
+      
+     { 0x86000001, "Clist library out of memory", "A fatal memory shortage occurred when allocating clist memory. Look for memory leaks in clist operations or excessive clist creation without cleanup." },
+     { 0x86000002, "Invalid clist operation", "An unrecoverable operation was attempted on the clist library. Check the function call for defects or invalid parameters." },
+
+     { 0x87000002, "EndTask didn't end", "A task failed to terminate correctly, causing a fatal error. Look for infinite loops, unreleased resources, or improper task cleanup." },
+     { 0x87000003, "Qpkt failure", "A fatal packet queuing failure occurred. Check for memory leaks in packet handling or corrupted packet structures." },
+     { 0x87000004, "Unexpected packet received", "A corrupted or unexpected packet caused a fatal error. Check for defects in message handling code or corrupted packet data." },
+     { 0x87000005, "Freevec failed", "A fatal attempt to free an exception vector failed. Check for corrupted vector tables or invalid vector addresses." },
+     { 0x87000006, "Disk block sequence error", "The logical block order on the disk is inconsistent, indicating fatal file system corruption. Check for hardware issues, corrupted filesystems, or improper disk operations." },
+     { 0x87000007, "Bitmap corrupt", "The file system's free block bitmap is corrupted, leading to a fatal error. Check for hardware issues, corrupted filesystems, or improper disk operations." },
+     { 0x87000008, "Key already free", "A file system key was in a fatal, illegal state. Check for filesystem corruption or defects in file system operations." },
+     { 0x87000009, "Invalid checksum", "A checksum verification failed on a data block, indicating a fatal data corruption error. Check for hardware issues, corrupted data, or improper data handling." },
+     { 0x8700000A, "Disk error", "A general disk I/O error occurred, leading to a fatal crash. Check for hardware issues, corrupted filesystems, or improper disk operations." },
+     { 0x8700000B, "Key out of range", "A file system key was found to be fatally outside the valid range. Check for filesystem corruption or defects in file system operations." },
+     { 0x8700000C, "Bad overlay", "An overlay file is corrupted, causing an unrecoverable error. Check for corrupted overlay files or defects in overlay loading code." },
+     { 0x8700000D, "Invalid init packet for cli/shell", "A corrupted startup packet for the command line interface caused an unrecoverable error. Check for corrupted startup configuration or defects in CLI initialization." },
+     { 0x8700000E, "Filehandle closed more than once", "A double-close defect on a file handle caused an unrecoverable error. Look for code that closes file handles multiple times or improper file handle lifecycle management." },
+
      { 0xB1000001, "Workbench no fonts", "Workbench failed to load required fonts, causing an unrecoverable error. Check for missing font files, corrupted fonts, or font loading configuration issues." },
      { 0xB1010004, "Workbench init potion alloc drawer failed", "Workbench failed to allocate memory for a drawer, causing a fatal memory allocation failure. Check for memory leaks in Workbench or system-wide memory shortage." },
      { 0xB1010009, "Workbench re-layout tool menu failed", "A fatal defect in the layout code caused Workbench to fail re-laying out a menu. Check for corrupted menu structures or layout calculation defects." },
@@ -622,36 +655,7 @@
      { 0xB101000E, "Workbench init screen and windows 2 failed", "Workbench failed to create its screen and windows due to a critical graphics initialization error. Check for graphics memory shortage or invalid screen mode requests." },
      { 0xB101000F, "Workbench init screen and windows 3 failed", "Workbench failed to create its screen and windows due to a critical graphics initialization error. Check for graphics memory shortage or invalid screen mode requests." },
      { 0xB1010010, "Workbench memory allocation failed", "Workbench could not allocate memory for a critical resource, causing a severe memory shortage. Check for memory leaks across the system or resource exhaustion." },
- 
-     /* DiskCopy Library Errors (0x32000000-0x3200FFFF) */
-     { 0x32000001, "DiskCopy library out of memory", "A memory leak or a large number of DiskCopy operations caused a memory shortage." },
-     { 0x32000002, "Invalid DiskCopy operation", "Check the function call for a defect." },
-     
-     /* GadTools Library Errors (0x33000000-0x3300FFFF) */
-     { 0x33000001, "GadTools library out of memory", "A memory leak or a large number of gadgets caused a memory shortage." },
-     { 0x33000002, "Invalid GadTools operation", "Check the function call for a defect." },
-     
-     /* CPU Exceptions with Deadend Bit Set (0x80000000-0x8000FFFF) */
-     { 0x80000002, "Bus Error", "A fatal hardware bus fault occurred. Look for memory access violations, corrupted pointers, or hardware memory faults." },
-     { 0x80000003, "Address Error", "An illegal address access occurred. Look for unaligned memory access, corrupted pointers, or invalid memory addresses." },
-     { 0x80000004, "Illegal Instruction", "An illegal CPU instruction was encountered. Look for corrupted code, wild jumps into data, or corrupted function pointers." },
-     { 0x80000005, "Division by Zero", "An integer division by zero was attempted. Look for uninitialized variables, missing validation, or corrupted divisor values." },
-     { 0x80000006, "CHK Instruction", "A bounds check failed. Look for array bounds violations, loop boundary errors, or corrupted array indices." },
-     { 0x80000007, "TRAPV Instruction", "An overflow was detected. Look for arithmetic operations that exceed integer limits or missing overflow checks." },
-     { 0x80000008, "Privilege Violation", "A program attempted to execute a privileged instruction. Look for code running in wrong privilege mode or corrupted instruction pointers." },
-     { 0x80000009, "Trace", "A trace exception occurred. Look for debugging code left in production or corrupted trace flags." },
-    { 0x8000000A, "Line 1010 Emulator", "An FPU instruction was run without coprocessor, most likely to be caused by executing data as code." },
-    { 0x8000000B, "Line 1111 Emulator", "An FPU instruction was run without coprocessor, most likely to be caused by executing data as code." },
-     { 0x8000000E, "Stack frame format error", "A corrupted stack frame caused a fatal error. Look for stack corruption, buffer overflows, or corrupted return addresses." },
-     { 0x80000018, "Spurious interrupt error", "An unexpected and unhandled interrupt occurred. Look for missing interrupt handlers, corrupted interrupt vectors, or hardware glitches." },
-     { 0x80000019, "Autovector Level 1", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
-     { 0x8000001A, "Autovector Level 2", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
-     { 0x8000001B, "Autovector Level 3", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
-     { 0x8000001C, "Autovector Level 4", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
-     { 0x8000001D, "Autovector Level 5", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
-     { 0x8000001E, "Autovector Level 6", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
-     { 0x8000001F, "Autovector Level 7", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
-     
+
      /* End marker */
      { 0xFFFFFFFF, "End of table", "End marker for error table." }
   };
