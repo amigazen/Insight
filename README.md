@@ -30,17 +30,15 @@ You can also run Insight from the command line with various options:
 
 ```bash
 # Basic Usage
-Insight [ERROR/K=code] [GURU/S] [VERBOSE/S]
+Insight [ERROR/K=code] [GURU/S]
 
 # Parameters
 ERROR=0xXXXXXXXX  # Analyze a specific error code
 GURU              # Show a random error
-VERBOSE           # Enable detailed debug output
 
 # Examples
 Insight ERROR=0x80000004
 Insight GURU
-Insight VERBOSE
 ```
 
 ## Error Categories
@@ -76,6 +74,14 @@ smake install ;Will copy Insight to the SDK/Tools drawer in the project director
 2. Place in `SYS:WBStartup/` or your preferred location. If installed in WBStartup, it will run on boot, doing nothing unless there was a LastAlert from the previous session crashing
 
 ## ChangeLog
+
+### Version 47.4 (13.11.2025)
+
+- Improved Insights given for FPU instruction exceptions
+- Fixed error code validation, error matching and output formatting in command line mode
+- Optimised error code look up to use a binary search instead of a linear search
+- Added implicit error code lookup to command line parsing
+- Removed VERBOSE/S option as previously only used for debugging
 
 ### Version 47.3 (27.08.2025)
 
