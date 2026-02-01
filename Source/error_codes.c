@@ -6,7 +6,7 @@
  *
  * After meditiation comes... Insight
  *
- * Copyright (c) 2025 amigazen project
+ * Copyright (c) 2025-26 amigazen project
  * Licensed under BSD 2-Clause License
  *
  * Redistribution and use in source and binary forms, with or without modification,

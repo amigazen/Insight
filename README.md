@@ -75,6 +75,10 @@ smake install ;Will copy Insight to the SDK/Tools drawer in the project director
 
 ## ChangeLog
 
+### Version 47.5 (1.2.2026)
+
+- Improved Insights for utility.library with remaining missing error codes added
+
 ### Version 47.4 (13.11.2025)
 
 - Improved Insights given for FPU instruction exceptions

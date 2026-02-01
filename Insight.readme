@@ -1,0 +1,147 @@
+  Short:        After meditation comes Insight - a LastAlert tool
+  Uploader:     toolkit@amigazen.com
+  Author:       amigazen project
+  Type:         util/misc
+  Version:      47.5
+  Architecture: m68k-amigaos >= 3.2
+  Distribution: Aminet
+  Kurz:         Guru Meditation Fehlerprüfer mit umfassender Fehlerdatenbank
+
+  Insight is a comprehensive Guru Meditation error checker for AmigaOS that
+  reads the LastAlert array from SysBase and provides detailed explanations
+  for system errors. It includes an extensive database of error codes with
+  troubleshooting guidance to help developers understand and fix system crashes.
+
+  Features:
+  - Automatically checks SysBase LastAlert array for system errors
+  - Comprehensive database of Guru Meditation error codes
+  - Detailed error descriptions and troubleshooting insights
+  - Command-line mode: Look up specific error codes
+
+  Requirements:
+  - AmigaOS 3.2 or higher (requires requester.class for error dialogs)
+
+  Usage:
+  
+  Workbench mode:
+  When launched from Workbench (double-click the Insight icon), Insight will:
+  
+  1. Read the LastAlert array from SysBase
+  2. Check if an error code exists (not 0xFFFFFFFF)
+  3. Look up the error in the comprehensive database
+  4. Display a requester dialog with the error description and troubleshooting guidance
+  5. Exit after displaying the error
+
+  If no error is detected, Insight exits silently.
+
+  Command-line mode:
+  
+  Check LastAlert:
+    Insight
+  
+  This will check SysBase LastAlert and print the error information to the console.
+  If no error exists, it exits with success status.
+
+  Look up specific error code:
+    Insight ERROR=8000000B
+    Insight ERROR=0x8000000B
+    Insight 8000000B
+  
+  You can specify an error code using the ERROR keyword, with or without the 0x
+  prefix. You can also simply provide the hex number directly without the ERROR
+  keyword. The error code must be exactly 8 hexadecimal digits.
+
+  Test mode (random error):
+    Insight GURU
+  
+  This displays a random error from the database in a requester dialog. Useful
+  for testing the interface and exploring the error database.
+
+  Examples:
+  - Check for system errors:
+    Insight
+    → Reads LastAlert from SysBase and displays any errors found
+
+  - Look up a specific error:
+    Insight ERROR=8000000B
+    → Displays information about "Illegal instruction" error
+
+  - Test the error dialog:
+    Insight GURU
+    → Shows a random error in a requester dialog
+
+  - Combine test mode with specific error:
+    Insight ERROR=01000005 GURU
+    → Looks up error 0x01000005 and displays it in a dialog
+
+  How It Works:
+  Insight reads the LastAlert array from the ExecBase structure (SysBase).
+  The LastAlert array contains the last 4 system alert codes:
+  
+  - LastAlert[0]: The most recent alert code (error code)
+  - LastAlert[1]: Additional error information
+  - LastAlert[2]: More error context
+  - LastAlert[3]: Task ID that caused the error
+
+  Insight first checks memory at address 0x0100 (where some systems store
+  error data), and if that's empty, falls back to reading SysBase->LastAlert[0].
+
+  The error code is then looked up in Insight's comprehensive database, which
+  includes:
+  - CPU exceptions (bus errors, address errors, illegal instructions, etc.)
+  - Exec library errors (memory corruption, semaphore errors, etc.)
+  - Graphics library errors (out of memory, copper list errors, etc.)
+  - Intuition library errors (gadget errors, window errors, etc.)
+  - DOS library errors (disk errors, file system errors, etc.)
+  - Device errors (timer, audio, keyboard, etc.)
+  - And many more categories
+
+  Each error entry includes:
+  - Error code (hexadecimal)
+  - Short description
+  - Detailed troubleshooting guidance
+
+  Error Database:
+  Insight includes one of the most comprehensive Guru Meditation error code
+  databases available, with detailed explanations for hundreds of error codes
+  covering all major AmigaOS subsystems. The database is based on official
+  Amiga documentation and real-world troubleshooting experience.
+
+  Limitations:
+  - Requires AmigaOS 3.2
+  - The concept of the SysBase LastAlert does not exist on OS4. Insight will do 
+  nothing and exit silently when run on OS4.
+
+  For more information, and to report issues, visit:
+  - GitHub: https://github.com/amigazen/Insight/
+  - Web: http://www.amigazen.com/toolkit/
+
+  This software is Free and Open Source Software distributed on BSD-2 license terms:
+
+  Copyright (c) 2026 amigazen project
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+  1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+
+  2. Redistributions in binary form must reproduce the above copyright notice,
+     this list of conditions and the following disclaimer in the documentation
+     and/or other materials provided with the distribution.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  POSSIBILITY OF SUCH DAMAGE.
+
+  amigazen project philosophy is based on openness:
+  Open to anyone and everyone - Open source and free for all - Open your mind and create!
