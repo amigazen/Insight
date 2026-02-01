@@ -4,8 +4,32 @@
  * This file contains a consolidated and verified database of Guru Meditation error codes
  * compiled from various Amiga documentation sources.
  *
+ * After meditiation comes... Insight
+ *
  * Copyright (c) 2025 amigazen project
  * Licensed under BSD 2-Clause License
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
  #include <exec/types.h>
@@ -557,6 +581,12 @@
      { 0x33000001, "GadTools library out of memory", "A memory leak or a large number of gadgets caused a memory shortage." },
      { 0x33000002, "Invalid GadTools operation", "Check the function call for a defect." },
 
+     /* Utility Library Errors (0x34000000-0x3400FFFF) */
+     { 0x34000000, "Utility library", "A critical error occurred in the utility.library." },
+
+     /* Lawbreaker / Utility-related (0x35000000) */
+     { 0x35000000, "Lawbreaker", "A utility.library or related subsystem violation was detected (alert 0x35000000)." },
+
      /* CPU Exceptions with Deadend Bit Set (0x80000000-0x8000FFFF) */
      { 0x80000000, "Deadend Alert", "A fatal system error occurred with the deadend bit set. This indicates an unrecoverable error that requires system reboot." },
      { 0x80000001, "Task held", "A fatal task synchronization error occurred. Look for improper task synchronization, missing Resume() calls, or deadlocks in task management." },
@@ -570,6 +600,8 @@
      { 0x80000009, "Trace", "A trace exception occurred. Look for debugging code left in production or corrupted trace flags." },
      { 0x8000000A, "Line 1010 Emulator", "An FPU instruction was run without coprocessor, most likely to be caused by executing data as code." },
      { 0x8000000B, "Line 1111 Emulator", "An FPU instruction was run without coprocessor, most likely to be caused by executing data as code." },
+     { 0x8000000C, "Emulator interrupt", "A quick or non-maskable interrupt occurred while the CPU emulator was active; check for uninitialized interrupt vectors or hardware glitches." },
+     { 0x8000000D, "Coprocessor protocol violation", "The 680x0 coprocessor protocol was violated; check for mismatched coprocessor instructions or corrupted context." },
      { 0x8000000E, "Stack frame format error", "A corrupted stack frame caused a fatal error. Look for stack corruption, buffer overflows, or corrupted return addresses." },
      { 0x80000018, "Spurious interrupt error", "An unexpected and unhandled interrupt occurred. Look for missing interrupt handlers, corrupted interrupt vectors, or hardware glitches." },
      { 0x80000019, "Autovector Level 1", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
@@ -579,6 +611,19 @@
      { 0x8000001D, "Autovector Level 5", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
      { 0x8000001E, "Autovector Level 6", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
      { 0x8000001F, "Autovector Level 7", "An interrupt was received, but no handler was installed. Look for missing interrupt handler installation or corrupted interrupt vector table." },
+     { 0x80000030, "FPCP branch/set unordered", "Floating-point branch or set was executed on an unordered condition; check for uninitialized or NaN operands." },
+     { 0x80000031, "FPCP inexact result", "Floating-point result was inexact; usually non-fatal but reported as deadend in this context." },
+     { 0x80000032, "FPCP divide by zero", "Floating-point division by zero; validate divisors in floating-point code." },
+     { 0x80000033, "FPCP underflow", "Floating-point underflow; result too small to represent." },
+     { 0x80000034, "FPCP operand error", "Invalid floating-point operand; check for corrupted or invalid data in FP operations." },
+     { 0x80000035, "FPCP overflow", "Floating-point overflow; result too large to represent." },
+     { 0x80000036, "FPCP signalling NAN", "A signalling NaN was used in a floating-point operation." },
+     { 0x80000037, "FPCP unimplemented data type", "The FPCP does not support the requested floating-point data type." },
+     { 0x80000038, "MMU configuration error", "The MMU (PMMU) is misconfigured; check page tables and MMU setup." },
+     { 0x80000039, "MMU illegal configuration", "An illegal MMU configuration was detected." },
+     { 0x8000003A, "MMU access level violation", "Memory access violated MMU access level or protection." },
+     { 0x8000003C, "FPCP unimplemented effective address", "The FPCP does not support the effective addressing mode used." },
+     { 0x8000003D, "FPCP unimplemented integer instruction", "An integer instruction was directed at the FPCP that it does not implement." },
 
      /* Exec Library Specific Errors (0x81000000-0x810000FF) - DEADEND ALERTS */
      { 0x81000001, "68000 exception vector checksum", "A fatal checksum error on the exception vector table. Look for wild pointer writes or buffer overflows in interrupt handlers. Check exception vector installation code." },
