@@ -359,6 +359,8 @@
      { 0x0100000E, "Stack appears to extend out of range", "A stack overflow or underflow was detected; check for infinite recursion or stack corruption." },
      { 0x0100000F, "Memory header not located", "An attempt was made to free a memory block with an invalid pointer; this is a `wild free` defect." },
      { 0x01000010, "Attempt to use old message semaphores", "An obsolete semaphore API was used; this is a compatibility issue." },
+     { 0x01000011, "AVL functions no longer implemented", "AVL tree functions were removed from exec.library; update code to use alternative APIs." },
+     { 0x01000012, "Task trees no longer implemented", "Task tree functions were removed from exec.library; update code to use alternative APIs." },
      { 0x010000FF, "Quick interrupt to uninitialized vector", "A quick interrupt occurred on an uninitialized vector; similar to a spurious interrupt." },
  
      /* Graphics Library Specific Errors (0x02000000-0x0200FFFF) - RECOVERY ALERTS */
@@ -414,6 +416,7 @@
      { 0x0400000F, "Couldn't open the console.device", "A missing driver or a resource conflict is the likely cause." },
      { 0x04000010, "Intuition skipped obtaining a semaphore", "This indicates a race condition defect; Intuition accessed a resource without a required semaphore." },
      { 0x04000011, "Intuition obtained a semaphore in bad order", "Intuition obtained semaphores in an order that could lead to a deadlock; this is a concurrency defect." },
+     { 0x04000012, "Removed copy of Intuition called", "Code called the removed or obsolete copy of intuition.library; update to use current library." },
      { 0x04010012, "Bad gadget type", "Unknown gadget type encountered during gadget creation or manipulation." },
      { 0x04010013, "MsgPort creation failed", "This is likely caused by an application creating too many ports without freeing them." },
      { 0x04010014, "MenuItem plane allocation failed", "A lack of memory or an excessive number of menu items caused this failure." },
@@ -455,7 +458,7 @@
      { 0x0700000C, "Bad overlay", "An overlay file is corrupted; this can be a file system error or a defect in the loading code." },
      { 0x0700000D, "Invalid init packet for cli/shell", "A corrupted startup packet for the command line interface is the likely cause." },
      { 0x0700000E, "Filehandle closed more than once", "A file handle was closed more than once; this is a `double-close` defect." },
-     { 0x0700000F, "QueuePacket failed", "A memory allocation failure or a defect in the packet handling code is the likely cause." },
+     { 0x0700000F, "Obsolete shell init function call", "An obsolete shell/CLI init function was called; update startup code to use current DOS API." },
      { 0x07000010, "Async packet received", "A defect in the message handling code or a corrupted packet is the likely cause." },
      { 0x07000011, "FreeVec failed", "A corrupted vector table or a defect in the vector handling code is the likely cause." },
      { 0x07000012, "Disk block sequence error", "The logical block order on the disk is inconsistent; this indicates file system corruption." },
@@ -587,6 +590,42 @@
      /* Lawbreaker / Utility-related (0x35000000) */
      { 0x35000000, "Lawbreaker", "A utility.library or related subsystem violation was detected (alert 0x35000000)." },
 
+     /* MMU Library Errors (0x3e000000-0x3e12800a, 0xbe00000b-0xbe000012) - from NDK mmu/alerts.h */
+     { 0x3e000000, "MMU library", "mmu.library base alert; see specific alert for details." },
+     { 0x3e000002, "MMU Init vector failed", "MMU library initialization failed at the Init vector; check MMU hardware and driver." },
+     { 0x3e000003, "MMU transparent translation unsupported", "Transparent translation mode is not supported by this MMU; check configuration." },
+     { 0x3e000004, "MMU table layout not supported", "The MMU table layout is not supported by the library; check MMU setup." },
+     { 0x3e000005, "MMU context contains unaligned mappings", "The context contains unaligned mappings; fix mapping alignment in MMU context." },
+     { 0x3e000006, "MMU table damaged", "The MMU table built by the library has been damaged; possible memory corruption." },
+     { 0x3e000007, "MMU release of active context", "An attempt was made to release an active MMU context; ensure context is deactivated first." },
+     { 0x3e000008, "MMU mapping contains undefined areas", "The mapping defined in the context contains undefined or invalid areas." },
+     { 0x3e000009, "MMU tree build phase conflict", "While building the MMU tree, another context change was required; concurrency or ordering defect." },
+     { 0x3e00000A, "MMU table builder failed", "The MMU table builder failed to build a lower level of the tree; check mapping parameters." },
+     { 0x3e00000C, "MMU context without valid root", "An attempt was made to install a context without a valid root pointer." },
+     { 0x3e00000D, "MMU exception handler no catcher", "The message exception handler did not find the destination catcher port for exceptions." },
+     { 0x3e00000E, "MMU exception release while busy", "An attempt was made to release an exception that is currently busy." },
+     { 0x3e00000F, "MMU message hook released by wrong caller", "A caller other than the one that installed it tried to release the message hook." },
+     { 0x3e000013, "MMU CheckMMU failed", "LibInit CheckMMU failed and could not repair the modified test page; MMU hardware or driver defect." },
+     { 0x3e000014, "MMU bad DMA transfer", "Bad DMA transfer initiated; destination not available or write-protected." },
+     { 0x3e000015, "MMU Os function after table setup", "An OS function that redefines the memory layout was called after MMU table setup." },
+     { 0x3e000016, "MMU no RemapSize-aligned memory", "While allocating page table memory, the library found free memory not aligned to RemapSize()." },
+     { 0x3e000017, "MMU AddMemList failed", "AddMemList() failed due to out-of-memory while rebuilding MMU tables." },
+     { 0x3e000018, "MMU AddConfigDev failed", "AddConfigDev() failed due to out-of-memory while mapping in new hardware." },
+     { 0x3e000073, "MMU queue daemon invalid message", "The message exception daemon replied with an unexpected or invalid message." },
+     { 0x3e001005, "MMU MAPP_SHARE of non-shared context", "A MAPP_SHARE of a non-shared context was found on MMU table rebuild." },
+     { 0x3e018001, "MMU no pool memory", "No memory to build the internal pool on library init." },
+     { 0x3e018002, "MMU context build failure", "Failure building the MMU context." },
+     { 0x3e018005, "MMU internal pool damaged", "The internal memory pool of the MMU library is damaged." },
+     { 0x3e02800A, "MMU no expansion library", "Library init failed to open the expansion library." },
+     { 0x3e02800C, "MMU no utility library", "Library init failed to open the utility library." },
+     { 0x3e090001, "MMU context still in use on flush", "While flushing the library, a context was still in use." },
+     { 0x3e090009, "MMU child context detached twice", "A child context was detached twice; use counter underrun." },
+     { 0x3e12800A, "MMU expansion resident not found", "Cannot find the resident module of the expansion library." },
+     { 0xBE00000B, "MMU configuration invalid (deadend)", "The MMU configuration could not be set up; parameters are invalid. Deadend." },
+     { 0xBE000010, "MMU line writeback unhandled (deadend)", "An unhandled line writeback that is not a physical fault; possible broken hardware." },
+     { 0xBE000011, "MMU line fetch invalid (deadend)", "An unhandled line fetch of invalid data that is not a physical fault; possible broken hardware." },
+     { 0xBE000012, "MMU movem fault without movem (deadend)", "The exception handler detected a movem fault without a movem instruction." },
+
      /* CPU Exceptions with Deadend Bit Set (0x80000000-0x8000FFFF) */
      { 0x80000000, "Deadend Alert", "A fatal system error occurred with the deadend bit set. This indicates an unrecoverable error that requires system reboot." },
      { 0x80000001, "Task held", "A fatal task synchronization error occurred. Look for improper task synchronization, missing Resume() calls, or deadlocks in task management." },
@@ -700,7 +739,7 @@
      { 0xB101000E, "Workbench init screen and windows 2 failed", "Workbench failed to create its screen and windows due to a critical graphics initialization error. Check for graphics memory shortage or invalid screen mode requests." },
      { 0xB101000F, "Workbench init screen and windows 3 failed", "Workbench failed to create its screen and windows due to a critical graphics initialization error. Check for graphics memory shortage or invalid screen mode requests." },
      { 0xB1010010, "Workbench memory allocation failed", "Workbench could not allocate memory for a critical resource, causing a severe memory shortage. Check for memory leaks across the system or resource exhaustion." },
-
+     
      /* End marker */
      { 0xFFFFFFFF, "End of table", "End marker for error table." }
   };

@@ -82,7 +82,7 @@ struct ClassLibrary *RequesterBase = NULL;
 /* Reaction class handles */
 Class *RequesterClass = NULL;
 
-static const char *verstag = "$VER: Insight 47.5 (1/2/2026)\n";
+static const char *verstag = "$VER: Insight 47.6 (14/3/2026)\n";
 static const char *stack_cookie = "$STACK: 8192\n";
 long oslibversion  = 47L; 
 
