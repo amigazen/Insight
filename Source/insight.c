@@ -30,6 +30,7 @@
 #include <exec/types.h>
 #include <exec/execbase.h>
 #include <exec/alerts.h>
+#include <exec/tasks.h>
 #include <dos/dos.h>
 #include <intuition/intuition.h>
 #include <intuition/intuitionbase.h>
@@ -68,6 +69,8 @@ ULONG HexStringToULong(STRPTR hexString);  /* Convert hex string to ULONG */
 ULONG ParseLastAlert(ULONG *taskID);  /* Parse LastAlert array and return error code */
 BOOL LooksLikeHexNumber(STRPTR str);  /* Check if string looks like a hex number */
 BOOL ValidateHexErrorCode(STRPTR hexString);  /* Validate that string is exactly 8 hex digits */
+static STRPTR ResolveTaskNameFromAddress(ULONG taskID);
+static VOID FormatTaskIdLabel(char *out, ULONG outSize, ULONG taskID);
 
 
 /* Library base pointers */
@@ -82,7 +85,7 @@ struct ClassLibrary *RequesterBase = NULL;
 /* Reaction class handles */
 Class *RequesterClass = NULL;
 
-static const char *verstag = "$VER: Insight 47.6 (14/3/2026)\n";
+static const char *verstag = "$VER: Insight 47.7 (6/4/2026)\n";
 static const char *stack_cookie = "$STACK: 8192\n";
 long oslibversion  = 47L; 
 
@@ -98,6 +101,7 @@ int main(int argc, char *argv[])
     BOOL testMode = FALSE;
     BOOL success = FALSE;
     BOOL fromWorkbench = FALSE;
+    STRPTR resolvedTaskName;
     
     /* Check if running from Workbench */
     /* When Workbench starts a program, argc = 0 and argv[0] contains WBStartup message */
@@ -358,12 +362,24 @@ int main(int argc, char *argv[])
                 /* Error exists - parse the error code and print to console */
                 errorInfo = GainInsight(guruCode);
                 if (errorInfo != NULL) {
-                    Printf("Error Code: 0x%08lX\n\nTask ID: 0x%08lX\n\nError: %s\n\n%s\n", 
-                           guruCode, taskID, errorInfo->description, errorInfo->insight);
+                    resolvedTaskName = ResolveTaskNameFromAddress(taskID);
+                    if (resolvedTaskName != NULL && resolvedTaskName[0] != '\0') {
+                        Printf("Error Code: 0x%08lX\n\nTask ID: 0x%08lX (%s)\n\nError: %s\n\n%s\n",
+                               guruCode, taskID, resolvedTaskName, errorInfo->description, errorInfo->insight);
+                    } else {
+                        Printf("Error Code: 0x%08lX\n\nTask ID: 0x%08lX\n\nError: %s\n\n%s\n",
+                               guruCode, taskID, errorInfo->description, errorInfo->insight);
+                    }
                     FreeErrorInfo(errorInfo);  /* Free allocated memory */
                 } else {
-                    Printf("Error Code: 0x%08lX\n\nTask ID: 0x%08lX\n\nError: Unknown Error\n\nNo Insight for this error code.\n", 
-                           guruCode, taskID);
+                    resolvedTaskName = ResolveTaskNameFromAddress(taskID);
+                    if (resolvedTaskName != NULL && resolvedTaskName[0] != '\0') {
+                        Printf("Error Code: 0x%08lX\n\nTask ID: 0x%08lX (%s)\n\nError: Unknown Error\n\nNo Insight for this error code.\n",
+                               guruCode, taskID, resolvedTaskName);
+                    } else {
+                        Printf("Error Code: 0x%08lX\n\nTask ID: 0x%08lX\n\nError: Unknown Error\n\nNo Insight for this error code.\n",
+                               guruCode, taskID);
+                    }
                 }
                 success = FALSE;  /* Exit with failure status since there was an error */
             }
@@ -466,6 +482,8 @@ VOID ShowErrorDialog(ULONG errorCode, STRPTR description, STRPTR explanation, UL
     ULONG screenWidth;
     ULONG maxTextWidth;
     BOOL testMode;
+    char taskLine[128];
+    STRPTR resolvedName;
     
     /* Determine if this is test mode based on taskID */
     testMode = (taskID == 0);
@@ -514,14 +532,20 @@ VOID ShowErrorDialog(ULONG errorCode, STRPTR description, STRPTR explanation, UL
                 "\33i%s\33n \n\n",
                 errorCode, description, explanation);
     } else {
+        resolvedName = ResolveTaskNameFromAddress(taskID);
+        if (resolvedName != NULL && resolvedName[0] != '\0') {
+            sprintf(taskLine, "Task ID: 0x%08X (%s) \n\n", (unsigned int)taskID, resolvedName);
+        } else {
+            sprintf(taskLine, "Task ID: 0x%08X \n\n", (unsigned int)taskID);
+        }
         /* Normal mode - show actual task ID from LastAlert */
         sprintf(message, 
                 "\n\n"
                 "Error Code: 0x%08X \n\n"
-                "Task ID: 0x%08X \n\n"
+                "%s"
                 "Error: %s \n\n"
                 "\33i%s\33n \n\n",
-                errorCode, taskID, description, explanation);
+                errorCode, taskLine, description, explanation);
     }
     
     /* Word wrap the message if we have a valid screen */
@@ -546,6 +570,107 @@ VOID ShowErrorDialog(ULONG errorCode, STRPTR description, STRPTR explanation, UL
         
         /* Clean up the requester object */
         DisposeObject(reqobj);
+    }
+}
+
+/*
+ * Try to resolve a Task name from the Task address (Task ID).
+ *
+ * Notes:
+ * - The Task ID in LastAlert is effectively a task pointer.
+ * - After reboot or once a task has exited, the address may no longer be valid.
+ * - We only return a name if we can confirm the pointer matches a live task in Exec lists.
+ */
+static STRPTR ResolveTaskNameFromAddress(ULONG taskID)
+{
+    struct ExecBase *sysBase;
+    struct Task *t;
+    struct Node *n;
+    STRPTR name;
+
+    name = NULL;
+
+    if (taskID == 0) {
+        return NULL;
+    }
+
+    sysBase = *(struct ExecBase **)4;
+    if (sysBase == NULL && SysBase != NULL) {
+        sysBase = SysBase;
+    }
+    if (sysBase == NULL) {
+        return NULL;
+    }
+
+    /* Prevent task list mutation while we scan */
+    Forbid();
+
+    /* Check the currently running task first */
+    if (sysBase->ThisTask != NULL && (ULONG)sysBase->ThisTask == taskID) {
+        name = (STRPTR)sysBase->ThisTask->tc_Node.ln_Name;
+        Permit();
+        return name;
+    }
+
+    /* Scan ready list */
+    n = sysBase->TaskReady.lh_Head;
+    while (n != NULL && n->ln_Succ != NULL) {
+        if ((ULONG)n == taskID) {
+            t = (struct Task *)n;
+            name = (STRPTR)t->tc_Node.ln_Name;
+            break;
+        }
+        n = n->ln_Succ;
+    }
+
+    /* Scan wait list if not found */
+    if (name == NULL) {
+        n = sysBase->TaskWait.lh_Head;
+        while (n != NULL && n->ln_Succ != NULL) {
+            if ((ULONG)n == taskID) {
+                t = (struct Task *)n;
+                name = (STRPTR)t->tc_Node.ln_Name;
+                break;
+            }
+            n = n->ln_Succ;
+        }
+    }
+
+    Permit();
+    return name;
+}
+
+/*
+ * Formats a Task ID line, including the resolved task name when possible.
+ *
+ * Output includes trailing blank line spacing for embedding into requester text:
+ * - "Task ID: 0x%08X (Name)\n\n" or "Task ID: 0x%08X\n\n"
+ */
+static VOID FormatTaskIdLabel(char *out, ULONG outSize, ULONG taskID)
+{
+    STRPTR name;
+    ULONG i;
+
+    if (out == NULL || outSize == 0) {
+        return;
+    }
+
+    /* Clear output buffer */
+    i = 0;
+    while (i < outSize) {
+        out[i] = '\0';
+        i++;
+    }
+
+    if (taskID == 0) {
+        return;
+    }
+
+    name = ResolveTaskNameFromAddress(taskID);
+    if (name != NULL && name[0] != '\0') {
+        sprintf(out, "Task ID: 0x%08X (%s) \n\n", (unsigned int)taskID, name);
+    } else {
+        sprintf(out, "Task ID: 0x%08X \n\n", (unsigned int)taskID);
     }
 }
 

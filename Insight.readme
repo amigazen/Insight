@@ -2,7 +2,7 @@
   Uploader:     toolkit@amigazen.com
   Author:       amigazen project
   Type:         util/misc
-  Version:      47.5
+  Version:      47.7
   Architecture: m68k-amigaos >= 3.2
   Distribution: Aminet
   Kurz:         Guru Meditation Fehlerprüfer mit umfassender Fehlerdatenbank

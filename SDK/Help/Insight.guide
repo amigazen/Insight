@@ -489,15 +489,6 @@ History of changes and improvements in Insight.
 
 @{"Main Index" LINK "main"}
 
-Version 47.1 (17.08.2025):
-? Initial release
-? Comprehensive error database
-? Workbench and command-line modes
-? Reaction-based GUI
-? Memory-safe operations
-? C89 compliance
-? Amiga OS 3.0+ support
-
 Features:
 ? 200+ predefined error codes
 ? Automatic error detection
